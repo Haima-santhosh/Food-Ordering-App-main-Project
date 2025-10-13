@@ -24,7 +24,10 @@ const userSchema = new mongoose.Schema({
          // minimum length
         minlength: [6, "Password must be at least 6 characters"],
           // maximum length  
-        maxlength: [20, "Password cannot exceed 20 characters"]   
+        maxlength: [60, "Password cannot exceed 60 characters"] ,
+
+        // exclude password field when querying, for security
+      
     },
 
      role: {
@@ -32,6 +35,26 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
+
+    profilePic: {
+    type: String,
+    default: "default.jpg"
+  },
+
+   phone: { 
+    type: String, 
+    required: true, 
+    unique: true 
+  },
+
+   address: [
+      {
+        street: String,
+        city: String,
+        state: String,
+        pincode: String,
+      },
+    ]
 
 
 },{timestamps:true})
