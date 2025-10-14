@@ -21,7 +21,7 @@ const authUser = (req,res,next)=>
         return res.status(401).json({error:"User is not authorized"})
      }
         
-     // if user has token verifying it to find any kind of tampering or issue
+     // if user has token verify it to find any kind of tampering or issue
 
      const decodedToken = jwt.verify(token,process.env.JWT_SECRET_KEY)
       
