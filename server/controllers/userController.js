@@ -1,6 +1,6 @@
 const User = require('../models/userModel')
 const bcrypt = require('bcrypt');
-const userRouter = require('../routes/userRoutes');
+
 const generateToken = require('../utils/generateToken');
 
 
@@ -61,9 +61,16 @@ console.log(hashedPassword)
 const newUser = new User({name,email,password:hashedPassword,profilePic})
 const savedUser = await newUser.save()
 
+
+// Don't want to return hashed password to client
+
+const userObject = savedUser.toObject()
+delete userObject.password
+
+
 // Send response for newly created User
 
-return res.status(201).json({message:"User is Created Successfully !!",savedUser})
+return res.status(201).json({message:"User is Created Successfully !!",user: userObject})
 
 
 }
@@ -109,7 +116,7 @@ if(!email || !password)
 // Check if User Exists
 
 
-const userExists = await User.findOne({email}).select("+password")
+const userExists = await User.findOne({email})
 if(!userExists)
 {
     return res.status(400).json({"message":"User Does not Exists"})
@@ -123,7 +130,7 @@ console.log(userExists)
 //Compare entered password with existing user password for match
 
 const passwordMatch = await bcrypt.compare(password,userExists.password)
-console.log(passwordMatch);
+//console.log(passwordMatch);
 
 if(!passwordMatch)
 {
@@ -131,9 +138,15 @@ if(!passwordMatch)
 }
 
 
+// Don't want to return password to client
+
+const userObject = userExists.toObject()
+delete userObject.password
+
+
 // Generate JWT token for user if passwords are matching
 const token = generateToken(userExists._id, 'user');
-console.log(token)
+//console.log(token)
 
 // Set the token as cookie 
 
@@ -143,19 +156,14 @@ console.log(token)
       httpOnly: true, 
        // change to true in production for https
       secure: process.env.NODE_ENV==='PRODUCTION',
-      sameSite: 'strict',
-      maxAge : 60 * 60 * 1000
+      sameSite: 'Strict',
+      maxAge : 60 * 60 * 1000 // 1 hr in milliseconds
     });
 
 
  // Send response
 
-return res.status(200).json({message: "Login successful!",token, 
-      user: {
-        _id: userExists._id,
-        name: userExists.name,
-        email: userExists.email,
-      },
+return res.status(200).json({message: "Login successful!",token, userObject
     })
 }
 
@@ -167,5 +175,81 @@ console.log(error);
 
 
 
+const checkUser = async(req,res) =>
+{
+    try 
+    {
+     res.json({message:"User is Authorized",userId:req.user.id})  
+    } 
+    catch (error) 
+    {
+     console.log(error);
+ res.status(error.status||500).json({error:error.message || " Internal Server Error"})      
+    }
+}
 
-module.exports = {register,login}
+
+
+// Get USER PROFILE for logged-in user
+
+const profile = async(req,res) =>
+{
+    try 
+    {
+
+    // req.user EXTRACT from authUser middleware
+    const userId = req.user.id
+     
+     // Find user in DB
+    const user = await User.findById(userId)
+
+     if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+    
+    // Remove password before sending response
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    res.status(200).json({ user: userObject });
+        
+    } 
+    catch (error) 
+    {
+      console.log(error)
+    res.status(500).json({ error: "Internal Server Error" })  
+    }
+
+}
+
+
+// LOGOUT for users
+
+const logout = async(req,res) =>
+{
+
+    try
+     {
+       // Clear the token cookie
+
+       res.clearCookie('token',
+        {
+            httpOnly : true ,
+            secure : process.env.NODE_ENV ==='PRODUCTION' ,
+            sameSite : 'Strict'
+        }
+       )
+       res.status(200).json({message:"User Logged Out Successfully"})
+        
+    } 
+    catch (error)
+     {
+      
+    console.log(error)
+    res.status(500).json({ error: "Internal Server Error" })   
+
+    }
+}
+
+
+module.exports = {register,login,checkUser,profile,logout}

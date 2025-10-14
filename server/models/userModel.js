@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
           // maximum length  
         maxlength: [60, "Password cannot exceed 60 characters"] ,
 
-        // exclude password field when querying, for security
+      
       
     },
 
@@ -43,20 +43,18 @@ const userSchema = new mongoose.Schema({
 
    phone: { 
     type: String, 
-    required: true, 
+   
     unique: true 
   },
 
-   address: [
-      {
-        street: String,
-        city: String,
-        state: String,
-        pincode: String,
-      },
-    ]
-
-
+  address: [
+  {
+    street: String,
+    city: String,
+    state: String,
+    pincode: String
+  }
+],
 },{timestamps:true})
 
 module.exports = mongoose.model("User",userSchema)

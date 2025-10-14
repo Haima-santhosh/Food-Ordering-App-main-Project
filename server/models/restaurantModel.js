@@ -2,9 +2,18 @@ const mongoose = require("mongoose");
 
 const restaurantSchema = new mongoose.Schema(
    {
-    restName: { type: String, required: true },
-    rating: { type: Number, default: 0 },
-    deliveryTime: { type: Number, required: true },
+    restName: { 
+      type: String, 
+      required: true 
+    },
+
+    rating: { 
+      type: Number, 
+      default: 0 
+    },
+    deliveryTime: { 
+      type: Number, 
+      required: true },
 
    cuisineType: {
       type: String,
