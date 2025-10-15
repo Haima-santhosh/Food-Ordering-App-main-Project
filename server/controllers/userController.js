@@ -174,6 +174,7 @@ console.log(error);
 }
 
 
+//CHECK USER IS AUTHORIZED OR NOT 
 
 const checkUser = async(req,res) =>
 {

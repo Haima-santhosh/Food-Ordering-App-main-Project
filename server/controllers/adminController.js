@@ -123,10 +123,18 @@ if(!adminExists)
 {
     return res.status(400).json({"message":"Admin Does not Exists"})
 }
-console.log(adminExists)
+
+
+
+//console.log(adminExists)
 // console.log("Plain password:", password);
 // console.log("Hashed password from DB:", adminExists.password);
 
+// check role is admin before login
+
+if (adminExists.role !== "admin") {
+  return res.status(403).json({ message: "Access denied. Not an admin." });
+}
 
 
 //Compare entered password with existing admin password for match
@@ -177,6 +185,7 @@ console.log(error);
 
 
 //CHECK ADMIN IS AUTHORIZED OR NOT 
+
 const checkAdmin = async(req,res) =>
 {
     try 
