@@ -173,7 +173,7 @@ const token = generateToken(adminExists._id, 'admin');
 
  // Send response
 
-return res.status(200).json({message: "Admin Login successful!",token, admin: adminObject
+return res.status(200).json({message: "Admin Login successful!", admin: adminObject
     })
 }
 

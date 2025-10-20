@@ -6,7 +6,7 @@ const{register,login,checkAdmin,profile,logout} = require('../controllers/adminC
 
 // REGISTER New Admin
 // http://localhost:3000/api/admin/register
-adminRouter.post('/register',register)
+adminRouter.post('/register',authAdmin,register)
 
 
 // Login Existing Admin
