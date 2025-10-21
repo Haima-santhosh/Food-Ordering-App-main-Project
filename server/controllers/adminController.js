@@ -265,7 +265,7 @@ const updateUserByAdmin = async(req,res) =>
     try 
     {
      
-    // user ID of user to update, req.param EXTRACT from authUser middleware
+    // user ID of user to update, req.param EXTRACT from authAdmin middleware
      const { userId } = req.params; 
      
     const{name,phone,address,role,isActive} = req.body || {}  
@@ -307,7 +307,7 @@ const deleteUserByAdmin = async(req,res) =>
     try 
     {
      
-    // user ID of user to update, req.param EXTRACT from authUser middleware
+    // user ID of user to DELETE, req.param EXTRACT from authUser middleware
      const { userId } = req.params; 
      
     
