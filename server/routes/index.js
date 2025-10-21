@@ -13,7 +13,7 @@ router.use('/user',userRouter)
 router.use('/admin',adminRouter)
 
 
-// http://localhost:3000/api/restaurant
+//http://localhost:3000/api/restaurant
 // router.use('/restaurant', require('./restaurantRoutes'))
 
 // http://localhost:3000/api/category

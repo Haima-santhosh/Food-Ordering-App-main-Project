@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
     pincode: String
   }
 ],
+ isActive: { type: Boolean, default: true }
 },{timestamps:true})
 
 module.exports = mongoose.model("User",userSchema)

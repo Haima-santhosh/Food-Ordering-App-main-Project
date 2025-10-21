@@ -1,7 +1,7 @@
 const express = require('express')
 const userRouter = express.Router()
 const authUser = require('../middlewares/authUser')
-const{register,login,checkUser,profile,logout} = require('../controllers/userController')
+const{register,login,checkUser,profile,logout,updateUser} = require('../controllers/userController')
 
 
 // REGISTER New Users
@@ -25,6 +25,10 @@ userRouter.get('/profile',authUser,profile)
 //User LOGOUT
 //http://localhost:3000/api/user/logout
 userRouter.post('/logout',authUser,logout)
+
+// UPDATE USER INFORMATIONS
+//http://localhost:3000/api/user/update-user
+userRouter.patch('/update-user',authUser,updateUser)
 
 
 

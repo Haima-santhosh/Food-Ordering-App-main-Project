@@ -1,7 +1,7 @@
 const express = require('express')
 const adminRouter = express.Router()
 const authAdmin = require('../middlewares/authAdmin')
-const{register,login,checkAdmin,profile,logout} = require('../controllers/adminController')
+const{register,login,checkAdmin,profile,logout,updateUserByAdmin,deleteUserByAdmin} = require('../controllers/adminController')
 
 
 // REGISTER New Admin
@@ -25,5 +25,13 @@ adminRouter.get('/profile',authAdmin,profile)
 //Admin LOGOUT
 //http://localhost:3000/api/admin/logout
 adminRouter.post('/logout',authAdmin,logout)
+
+// UPDATE USER INFORMATIONS by ADMIN
+//http://localhost:3000/api/admin/update-user/:userId
+adminRouter.patch('/update-user/:userId',authAdmin,updateUserByAdmin)
+
+// DELETE USER  by ADMIN
+//http://localhost:3000/api/admin/delete-user/:userId
+adminRouter.delete('/delete-user/:userId',authAdmin,deleteUserByAdmin)
 
 module.exports = adminRouter

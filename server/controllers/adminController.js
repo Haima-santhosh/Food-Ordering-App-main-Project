@@ -258,5 +258,92 @@ const logout = async(req,res) =>
 
 }
 
+// UPDATE USER DETAILS BY ADMIN
 
-module.exports = {register,login,checkAdmin,profile,logout}
+const updateUserByAdmin = async(req,res) =>
+{
+    try 
+    {
+     
+    // user ID of user to update, req.param EXTRACT from authUser middleware
+     const { userId } = req.params; 
+     
+    const{name,phone,address,role,isActive} = req.body || {}  
+    
+    
+    // Prevent admin from updaiting their own account here
+
+    if (req.admin.id === userId) {
+      return res.status(403).json({ message: "Admin can’t update their own account here." });
+    }
+
+  
+     
+     // Find user in DB using field projection method to remove password in response
+    const user = await User.findByIdAndUpdate(userId,{name,phone,address,role,isActive},{new:true,runValidators:true}).select('-password')
+
+     if (!user) {
+      return res.status(404).json({ message: "User Not Found" })
+    }
+    
+    
+
+     res.status(200).json({message: "User Details Updated Successfully by Admin !!",user
+    });
+        
+    } 
+    catch (error) 
+    {
+      console.log(error)
+    res.status(500).json({ error: "Internal Server Error" })  
+    }
+
+}
+
+// DELETE USER  BY ADMIN
+
+const deleteUserByAdmin = async(req,res) =>
+{
+    try 
+    {
+     
+    // user ID of user to update, req.param EXTRACT from authUser middleware
+     const { userId } = req.params; 
+     
+    
+    // Prevent admin from updaiting their own account here
+
+    if (req.admin.id === userId) {
+      return res.status(403).json({ message: "Admin can’t update their own account here." });
+    }
+
+
+     if (!userId) {
+      return res.status(404).json({ message: "User ID is Required" })
+    }
+     
+     // Find user in DB using ID
+    const user = await User.findByIdAndDelete(userId)
+
+    
+    
+     if (!user) {
+      return res.status(404).json({ message: "User Not Found" })
+    }
+    
+
+     res.status(200).json({message: "User Details Deleted Successfully by Admin !!",
+    });
+        
+    } 
+    catch (error) 
+    {
+      console.log(error)
+    res.status(500).json({ error: "Internal Server Error" })  
+    }
+
+}
+
+
+
+module.exports = {register,login,checkAdmin,profile,logout,updateUserByAdmin,deleteUserByAdmin}

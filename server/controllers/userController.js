@@ -163,7 +163,7 @@ const token = generateToken(userExists._id, 'user');
 
  // Send response
 
-return res.status(200).json({message: "Login successful!",token, userObject
+return res.status(200).json({message: "Login successful!", userObject
     })
 }
 
@@ -253,4 +253,40 @@ const logout = async(req,res) =>
 }
 
 
-module.exports = {register,login,checkUser,profile,logout}
+// UPDATE USER DETAILS BY USER
+
+const updateUser = async(req,res) =>
+{
+    try 
+    {
+    
+     
+    const{name,email,password,profilePic,address,phone} = req.body || {}    
+
+    // req.user EXTRACT from authUser middleware
+    const userId = req.user.id
+     
+     // Find user in DB using field projection method to remove password in response
+    const user = await User.findByIdAndUpdate(userId,{name,email,password,profilePic,address,phone},{new:true,runValidators:true}).select('-password')
+
+     if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+    
+    
+
+     res.status(200).json({message: "User Details Updated Successfully !!",user,
+    });
+        
+    } 
+    catch (error) 
+    {
+      console.log(error)
+    res.status(500).json({ error: "Internal Server Error" })  
+    }
+
+}
+
+
+
+module.exports = {register,login,checkUser,profile,logout,updateUser}
