@@ -30,7 +30,7 @@ if (!restName || !deliveryTime || !cuisineType || !averagePrice)
 }
 
 
-// Check if the user is already exists
+// Check if the restaurant is already exists
 
 
 const restaurantExists = await Restaurant.findOne({restName})
@@ -172,7 +172,7 @@ const updateRestaurantByAdmin = async(req,res) =>
   {
     try 
     {
-     // restaurant ID of user to update, req.param EXTRACT from authUser middleware
+     // restaurant ID of RESTAURANT to update,EXTRACT from  req.param 
           const { restId } = req.params; 
           
          
@@ -229,6 +229,8 @@ const updateRestaurantByAdmin = async(req,res) =>
     }
   }
 
+
+
   //GET Single  RESTAURANT Details IN USER SIDE
 
   const getRestaurantDataByUser = async(req,res)=>
@@ -237,6 +239,9 @@ const updateRestaurantByAdmin = async(req,res) =>
      {
    // restaurant ID of restaurant to view from request parameters
        const { restId } = req.params
+
+
+       // Check validation
 
       if (!restId) {
       return res.status(400).json({ message: "Restaurant ID is required" });
@@ -261,5 +266,7 @@ const updateRestaurantByAdmin = async(req,res) =>
       res.status(500).json({ error: "Internal Server Error" })    
     }
   }
+
+  
 
 module.exports = {addRestaurants,allRestaurants,getRestaurant,updateRestaurantByAdmin,deleteRestaurantByAdmin,getRestaurantByUser,getRestaurantDataByUser}

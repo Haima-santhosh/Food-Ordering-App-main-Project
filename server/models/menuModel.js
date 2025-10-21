@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 
-const menuSchema = new schema(
+const menuSchema = new mongoose.Schema(
    {
    restId: { 
       type: mongoose.Schema.Types.ObjectId, 

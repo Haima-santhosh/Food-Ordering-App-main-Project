@@ -4,6 +4,8 @@ const router = express.Router()
 const userRouter = require('./userRoutes')
 const adminRouter = require('./adminRoutes')
 const restaurantRouter = require('./restaurantRoutes')
+const categoryRouter = require('./categoryRoutes')
+const menuRouter = require('./menuRoutes')
 
 
 
@@ -18,10 +20,10 @@ router.use('/admin',adminRouter)
 router.use('/restaurants', restaurantRouter)
 
 // http://localhost:3000/api/category
-// router.use('/category', require('./categoryRoutes'))
+router.use('/category',categoryRouter)
 
 // http://localhost:3000/api/menu
-// router.use('/menu', require('./menuRoutes'))
+router.use('/menu',menuRouter)
 
 // http://localhost:3000/api/order
 // router.use('/order', require('./orderRoutes'))
