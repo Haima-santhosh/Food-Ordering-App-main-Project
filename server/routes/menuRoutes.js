@@ -2,16 +2,17 @@ const express = require('express')
 const menuRouter = express.Router()
 const authAdmin = require('../middlewares/authAdmin')
 const { addMenu, allMenu, viewMenu, updateMenuByAdmin, deleteMenuByAdmin, getMenuByUser , getMenuDataByUser , getMenuDataByCategory } = require('../controllers/menuController')
-
+const upload = require('../middlewares/multer')
+const authUser = require('../middlewares/authUser')
 
 
 // Add New Menu by ADMIN
 // POST http://localhost:3000/api/menu/add-menu
 
-menuRouter.post('/add-menu', authAdmin, addMenu)
+menuRouter.post('/add-menu', authAdmin,upload.single('image'), addMenu)
 
 
-//VIEW all Categories by ADMIN
+//VIEW all Menu Items by ADMIN
 // GET http://localhost:3000/api/menu/all-menu
 menuRouter.get('/all-menu',authAdmin,allMenu)
 
@@ -24,7 +25,7 @@ menuRouter.get('/view-menu/:menuId',authAdmin,viewMenu)
 
 // UPDATE Menu by ADMIN
 // PATCH http://localhost:3000/api/menu/update-menu/:menuId
-menuRouter.patch('/update-menu/:menuId',authAdmin,updateMenuByAdmin)
+menuRouter.patch('/update-menu/:menuId',authAdmin,upload.single('image'),updateMenuByAdmin)
 
 // DELETE Menu  by ADMIN
 // DELETE http://localhost:3000/api/menu/delete-menu/:menuId
@@ -39,11 +40,11 @@ menuRouter.get('/',getMenuByUser)
 
 // Get All Menu Items by Category
 // GET /api/menu/category/:categoryId
-menuRouter.get('/category/:categoryId', getMenuDataByCategory)
+menuRouter.get('/category/:categoryId',authUser, getMenuDataByCategory)
 
 // VIEW Single Menu Details  by User
 // GET http://localhost:3000/api/menu/:menuId
-menuRouter.get('/:menuId', getMenuDataByUser)
+menuRouter.get('/:menuId',authUser, getMenuDataByUser)
 
 
 module.exports = menuRouter

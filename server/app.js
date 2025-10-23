@@ -13,6 +13,8 @@ app.use(express.json())
 
 // Middleware to parse cookies from requests
 app.use(cookieParser())
+// Middleware to parse form data from requests
+app.use(express.urlencoded({ extended: true }))
 
 
 // http://localhost:3000/api

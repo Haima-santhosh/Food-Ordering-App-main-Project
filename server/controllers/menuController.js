@@ -1,5 +1,13 @@
 const Menu = require('../models/menuModel');
-const { getCategoryDataByUser } = require('./categoryController');
+
+// cloudinary
+const {cloudinaryInstance} = require('../config/cloudinary')
+
+//multer
+
+const upload = require('../middlewares/multer')
+
+
 
 
 // ADD NEW Menu BY ADMIN
@@ -12,16 +20,24 @@ try {
     
 // Take required Menu details from request
 
-const {restId, categoryId, itemName, itemImage, itemDescription, price } = req.body || {};
+const {restId, categoryId, itemName, itemDescription, price,rating } = req.body || {};
 
 // Extract Menu fields from request body
 
-//console.log(restId, categoryId, itemName, itemImage, itemDescription, price)
+//console.log(restId, categoryId, itemName, itemDescription, price)
+
+
+// Upload Menu Images 
+const file = req.file //from multer
+const cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path)
+const imageUrl = cloudinaryResponse.secure_url;
+console.log(imageUrl);
+
 
 
 // Check Validation
 
-if (!restId || !categoryId || !itemName || !itemImage || !price) 
+if (!restId || !categoryId || !itemName || !itemDescription || !price || !rating || !imageUrl ) 
 {
     return res.status(400).json({message :"Please Fill All Required Field"})
     
@@ -41,7 +57,7 @@ if(menuExists)
 
 // Create New Menu item
 
-const newMenu = new Menu({restId, categoryId, itemName, itemImage, itemDescription, price})
+const newMenu = new Menu({restId, categoryId, itemName, itemImage:imageUrl, itemDescription,rating, price,})
 const savedMenu = await newMenu.save()
 
 
@@ -99,7 +115,7 @@ const viewMenu = async(req,res)=>
 {
     try {
 
-      // Menu ID of Menu to view from request parameters
+      // Fetch the ID of Menu to view, from request parameters
        const { menuId } = req.params
 
        
@@ -148,12 +164,20 @@ const updateMenuByAdmin = async(req,res) =>
        const { menuId } = req.params; 
 
        // Extract Menu fields from request body
-      const { restId, categoryId, itemName, itemImage, itemDescription, price } = req.body || {};
+      const { restId, categoryId, itemName, itemDescription, price } = req.body || {}
       
-     
+        // Handle image upload from multer if image already uploaded
+       let imageUrl;
+       if (req.file) 
+        {
+      const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+      console.log(cloudinaryResponse);
+      imageUrl = cloudinaryResponse.secure_url;
+        }
+       
        
        // Find Menu in DB and update
-      const menu = await Menu.findByIdAndUpdate(menuId,{restId, categoryId, itemName, itemImage, itemDescription, price},{new:true,runValidators:true})
+      const menu = await Menu.findByIdAndUpdate(menuId,{restId, categoryId, itemName, itemDescription, price,image: imageUrl || image},{new:true,runValidators:true})
   
        if (!menu) {
         return res.status(404).json({ message: "Menu Not Found" })

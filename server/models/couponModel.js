@@ -1,89 +1,43 @@
-const mongoose = require('mongoose')
-const couponSchema = new mongoose.Schema(
-    {
-   // Unique coupon code
-    code: { 
-      type: String, 
-      required: true, 
-      unique: true, 
-      trim: true 
-    },
+const mongoose = require('mongoose');
 
-   // Unique coupon code
-    code: { 
-      type: String, 
-      required: true, 
-      unique: true, 
-      trim: true 
-    },
+const couponSchema = new mongoose.Schema({
 
-
-     discountValue: { 
-      type: Number, 
-      required: true 
-    },
-
-     minOrderValue: { 
-      type: Number, 
-      default: 0 
-    },
-
-
-     maxDiscount: { 
-      type: Number 
-    },
-
-    // Validity period
-
-    validFrom: { 
-      type: Date, 
-      required: true 
-    },
-    validTill: { 
-      type: Date, 
-      required: true 
-    },
-
-
-   // Coupon active or not
-    isActive: { 
-      type: Boolean, 
-      default: true 
-    },
-
-
-    usageLimit: { 
-      type: Number, 
-      default: 0 
-    },
-
-    // How many times it has already used before
-    usedCount: { 
-      type: Number, 
-      default: 0 
-    },
-    
-    // How many times a single user can use this coupon
-    userUsageLimit: { 
-      type: Number, 
-      default: 1 
-    },
-
-    // Restaurant-level coupon
-
-     restId: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Restaurant" 
-    },
-
-     // user-specific coupon
-
-   userId: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "User" 
-    }
-    
+  // unique coupon code
+  code: {           
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
   },
-  { timestamps: true }
-)
-module.exports = mongoose.model("Coupons",couponSchema)
+
+  // discount amount or percentage
+
+  discount: {       
+    type: Number,
+    required: true
+  },
+  // minimum order value to apply coupon
+  minOrderValue: {  
+    type: Number,
+    default: 0
+  },
+  // start date of coupon
+  validFrom: {      
+    type: Date,
+    required: true
+  },
+  // end date of coupon
+  validTill: {      
+    type: Date,
+    required: true
+  },
+
+    // active or inactive
+  isActive: {     
+    type: Boolean,
+    default:true
+   
+  }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Coupon', couponSchema);

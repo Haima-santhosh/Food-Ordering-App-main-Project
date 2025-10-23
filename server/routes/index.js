@@ -6,7 +6,9 @@ const adminRouter = require('./adminRoutes')
 const restaurantRouter = require('./restaurantRoutes')
 const categoryRouter = require('./categoryRoutes')
 const menuRouter = require('./menuRoutes')
-
+const cartRouter = require('./cartRoutes')
+const couponRouter = require('./couponRoutes')
+const orderRouter = require('./orderRoutes')
 
 
 // http://localhost:3000/api/user
@@ -25,20 +27,26 @@ router.use('/category',categoryRouter)
 // http://localhost:3000/api/menu
 router.use('/menu',menuRouter)
 
-// http://localhost:3000/api/order
-// router.use('/order', require('./orderRoutes'))
-
 // http://localhost:3000/api/cart
-// router.use('/cart', require('./cartRoutes'))
+router.use('/cart',cartRouter)
+
+
+// http://localhost:3000/api/coupons
+router.use('/coupons',couponRouter)
+
+
+// http://localhost:3000/api/order
+router.use('/order',orderRouter)
+
 
 // http://localhost:3000/api/payment
 // router.use('/payment', require('./paymentRoutes'))
 
+
+
 // http://localhost:3000/api/review
 // router.use('/review', require('./reviewRoutes'))
 
-// http://localhost:3000/api/coupon
-// router.use('/coupon', require('./couponRoutes'))
 
 
 

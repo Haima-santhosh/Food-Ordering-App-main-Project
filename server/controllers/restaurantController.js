@@ -1,8 +1,11 @@
 const Restaurant = require('../models/restaurantModel')
 
+// cloudinary
+const {cloudinaryInstance} = require('../config/cloudinary')
 
+//multer
 
-
+const upload = require('../middlewares/multer')
 
 // ADD NEW RESTAURANT BY ADMIN
 
@@ -14,7 +17,19 @@ try {
     
 // Take required restaurant details from request
 
-const { restName, rating, deliveryTime, cuisineType, address, averagePrice } = req.body || {};
+const { restName, rating, deliveryTime, cuisineType, address, averagePrice,image } = req.body || {};
+
+
+// Upload Restaurant Images 
+const file = req.file //from multer
+const cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path)
+console.log(cloudinaryResponse);
+
+
+
+
+
+
 
 // Extract restaurant fields from request body
 
@@ -43,7 +58,7 @@ if(restaurantExists)
 
 // Create New Restaurant
 
-const newRestaurant = new Restaurant({restName,rating : rating || 0,deliveryTime,cuisineType,address: address || [],averagePrice})
+const newRestaurant = new Restaurant({restName,rating : rating || 0,deliveryTime,cuisineType,address: address || [],averagePrice,image:cloudinaryResponse.url})
 const savedRestaurant = await newRestaurant.save()
 
 
@@ -128,6 +143,8 @@ const getRestaurant = async(req,res)=>
     }
 }
 
+
+
 // UPDATE RESTAURANT INFORMATIONS by ADMIN
 
 const updateRestaurantByAdmin = async(req,res) =>
@@ -142,10 +159,18 @@ const updateRestaurantByAdmin = async(req,res) =>
        // Extract restaurant fields from request body
       const { restName, rating, deliveryTime, cuisineType, address, averagePrice } = req.body || {};
       
-     
+        // Handle image upload from multer if image already uploaded
+       let imageUrl;
+       if (req.file) 
+        {
+      const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+      console.log(cloudinaryResponse);
+      imageUrl = cloudinaryResponse.url;
+        }
        
        // Find restaurant in DB and update
-      const restaurant = await Restaurant.findByIdAndUpdate(restId,{restName, rating, deliveryTime, cuisineType, address, averagePrice},{new:true,runValidators:true})
+       // use uploaded image or keep existing
+      const restaurant = await Restaurant.findByIdAndUpdate(restId,{restName, rating, deliveryTime, cuisineType, address, averagePrice,image: imageUrl || image},{new:true,runValidators:true})
   
        if (!restaurant) {
         return res.status(404).json({ message: "Restaurant Not Found" })
@@ -165,6 +190,9 @@ const updateRestaurantByAdmin = async(req,res) =>
   
   }
 } 
+
+
+
 
   // DELETE A RESTAURANT BY ADMIN
 

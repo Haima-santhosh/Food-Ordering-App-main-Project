@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const generateToken = require('../utils/generateToken');
 
 
+
+
 // SIGNUP New Admin
 const register = async(req,res) =>
 {
@@ -67,8 +69,7 @@ const savedAdmin = await newAdmin.save()
 const adminObject = savedAdmin.toObject()
 delete adminObject.password
 
-//delete address field for admin
-delete adminObject.address
+
 
 // Send response for newly created Admin
 
@@ -280,7 +281,7 @@ const updateUserByAdmin = async(req,res) =>
   
      
      // Find user in DB using field projection method to remove password in response
-    const user = await User.findByIdAndUpdate(userId,{name,phone,address,role,isActive},{new:true,runValidators:true}).select('-password')
+    const user = await User.findByIdAndUpdate(userId,{name,phone,role,isActive},{new:true,runValidators:true}).select('-address')
 
      if (!user) {
       return res.status(404).json({ message: "User Not Found" })

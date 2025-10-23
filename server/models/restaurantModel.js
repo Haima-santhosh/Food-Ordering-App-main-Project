@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const restaurantSchema = new mongoose.Schema(
-   {
+  {
     restName: { 
       type: String, 
       required: true 
@@ -11,15 +11,18 @@ const restaurantSchema = new mongoose.Schema(
       type: Number, 
       default: 0 
     },
+
     deliveryTime: { 
       type: Number, 
-      required: true },
+      required: true 
+    },
 
-   cuisineType: {
+    cuisineType: {
       type: String,
       enum: [ "Indian","Italian","Chinese","Mexican","Japanese","North Indian","Mediterranean","American"],
       required: true,
     },
+
     address: [
       {
         street: String,
@@ -28,18 +31,21 @@ const restaurantSchema = new mongoose.Schema(
         pincode: String,
       },
     ],
-  
-
-   // Average price per meal 
 
     averagePrice: {
       type: Number,
       required: true,
       min: 0,
     },
-   
-},   
-  { timestamps: true }
 
-)
+    // New field for image
+    image: {
+      type: String,
+     required: true
+    },
+
+  },   
+  { timestamps: true }
+);
+
 module.exports = mongoose.model("Restaurant", restaurantSchema);
