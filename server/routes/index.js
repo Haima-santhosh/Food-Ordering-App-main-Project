@@ -9,6 +9,7 @@ const menuRouter = require('./menuRoutes')
 const cartRouter = require('./cartRoutes')
 const couponRouter = require('./couponRoutes')
 const orderRouter = require('./orderRoutes')
+const reviewRouter = require('./reviewRoutes')
 
 
 // http://localhost:3000/api/user
@@ -45,7 +46,7 @@ router.use('/order',orderRouter)
 
 
 // http://localhost:3000/api/review
-// router.use('/review', require('./reviewRoutes'))
+router.use('/review', reviewRouter)
 
 
 

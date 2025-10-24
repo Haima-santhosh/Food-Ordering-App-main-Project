@@ -2,22 +2,22 @@ const express = require('express')
 const orderRouter = express.Router()
 const authAdmin = require('../middlewares/authAdmin')
 const authUser = require('../middlewares/authUser')
-const { addOrders,getOrders,getSingleOrder,cancelOrder,getOrdersByAdmin,getSingleOrderByAdmin} = require('../controllers/orderController')
+const { addOrders,getOrders,getSingleOrder,cancelOrder,getOrdersByAdmin,getSingleOrderByAdmin,updateOrderStatus} = require('../controllers/orderController')
 
 
 /**********************   ADMIN ROUTES ******************************/
 //Get All Orders by ADMIN
 // GET http://localhost:3000/api/order/admin
-orderRouter.get('/admin', authAdmin, getOrdersByAdmin)
+orderRouter.get('/', authAdmin, getOrdersByAdmin)
 
 
 // Get Single Order in Admin Side
 // GET http://localhost:3000/api/order/admin/:orderId
-orderRouter.get('/admin/:orderId', authAdmin, getSingleOrderByAdmin)
+orderRouter.get('/:orderId', authAdmin, getSingleOrderByAdmin)
 
 //Update Order Status by Admin
 // PATCH http://localhost:3000/api/order/:orderId
-// orderRouter.patch('/:orderId', authAdmin, updateOrders)
+orderRouter.patch('/:orderId', authAdmin, updateOrderStatus)
 
 
 

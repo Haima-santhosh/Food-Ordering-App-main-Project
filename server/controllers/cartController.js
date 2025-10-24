@@ -96,7 +96,13 @@ const Menu = require('../models/menuModel')
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
-  
+     
+
+      // Recalculate total using the model method
+         await cart.calculateTotal();
+         await cart.save(); 
+
+         
       //send response
         res.status(200).json({message: "User cart fetched successfully",cart})
           

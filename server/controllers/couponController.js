@@ -237,6 +237,62 @@ const Cart = require('../models/cartModel');
     {
         try
          {
+
+          //fetch userID fron request body
+
+          const userId = req.user.id
+
+          //fetch coupon ID from request parameters
+
+          const{couponId} = req.params
+
+          // check if the coupon is available in the DB
+
+          const coupon = await Coupon.findById(couponId)
+          if(!coupon)
+          {
+            return res.status(404).json({error:"Coupon is not found"})
+          }
+
+          // check if the coupon is active or not
+          if(!coupon.isActive)
+          {
+          
+             return res.status(400).json({error:"Coupon is not Available Now"})
+
+          }
+
+          // check if the coupon validity or check if it is expired
+
+          const now = new Date()
+
+          if(now < coupon.validFrom && now > coupon.validTill)
+          {
+            return res.status(400).json({error:"Coupon is not Valid or Expired "})
+          }
+
+          // Get User's Cart
+          const cart =await Cart.findOne({userId})
+          
+          // Check if the users cart have items, then only we can apply coupons
+
+          if(!cart || cart.items.length===0)
+          {
+             return res.status(400).json({error:"Cart is Empty"})
+          }
+
+          // check if the minimum oreder value condition is satisfied or not
+
+          if(cart.totalAmount < coupon.minOrderValue)
+          {
+              return res.status(400).json({error:`Eligible only if  purchase atleast ${coupon.minOrderValue} for this Coupon`})
+          }
+
+          //Apply Discound
+
+          const totalAmountAfterDiscount = cart.totalAmount - coupon.discount
+
+          return res.status(200).json({message:"Coupon Applied !!!!",originalTotal:cart.totalAmount,discount:coupon.discount,totalAmountAfterDiscount})
             
         } 
         catch (error)
