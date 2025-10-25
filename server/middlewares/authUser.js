@@ -24,6 +24,12 @@ const authUser = (req,res,next)=>
      // if user has token verify it to find any kind of tampering or issue
 
      const decodedToken = jwt.verify(token,process.env.JWT_SECRET_KEY)
+
+     // Check role
+    if (decodedToken.role !== 'user') {
+      return res.status(403).json({ error: "Admins cannot access this route" });
+    }
+
       
      // If token invalid, block access
      if(!decodedToken)

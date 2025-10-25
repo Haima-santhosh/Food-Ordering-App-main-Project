@@ -7,17 +7,17 @@ const { addOrders,getOrders,getSingleOrder,cancelOrder,getOrdersByAdmin,getSingl
 
 /**********************   ADMIN ROUTES ******************************/
 //Get All Orders by ADMIN
-// GET http://localhost:3000/api/order/admin
-orderRouter.get('/', authAdmin, getOrdersByAdmin)
+// GET http://localhost:3000/api/order/all-orders-admin/admin
+orderRouter.get('/all-orders-admin', authAdmin, getOrdersByAdmin)
 
 
 // Get Single Order in Admin Side
-// GET http://localhost:3000/api/order/admin/:orderId
-orderRouter.get('/:orderId', authAdmin, getSingleOrderByAdmin)
+// GET http://localhost:3000/api/order/admin/get-order-admin/:orderId
+orderRouter.get('/get-order-admin/:orderId', authAdmin, getSingleOrderByAdmin)
 
 //Update Order Status by Admin
-// PATCH http://localhost:3000/api/order/:orderId
-orderRouter.patch('/:orderId', authAdmin, updateOrderStatus)
+// PATCH http://localhost:3000/api/order/update-order-admin/:orderId
+orderRouter.patch('/update-order-admin/:orderId', authAdmin, updateOrderStatus)
 
 
 
@@ -28,18 +28,18 @@ orderRouter.patch('/:orderId', authAdmin, updateOrderStatus)
 orderRouter.post('/add-orders', authUser, addOrders)
 
 // Get User All Orders
-// GET http://localhost:3000/api/order
-orderRouter.get('/', authUser, getOrders)
+// GET http://localhost:3000/api/order/all-orders
+orderRouter.get('/all-orders', authUser, getOrders)
 
 // Get Single Order in User Side
-// GET http://localhost:3000/api/order/:orderId
-orderRouter.get('/:orderId', authUser, getSingleOrder)
+// GET http://localhost:3000/api/order/view-single-order/:orderId
+orderRouter.get('/view-single-order/:orderId', authUser, getSingleOrder)
 
 
 //Cancel Order by User
 
-// DELETE http://localhost:3000/api/order/:orderId
-orderRouter.delete('/:orderId', authUser, cancelOrder)
+// DELETE http://localhost:3000/api/order/cancel-order/:orderId
+orderRouter.delete('/cancel-order/:orderId', authUser, cancelOrder)
 
 
 

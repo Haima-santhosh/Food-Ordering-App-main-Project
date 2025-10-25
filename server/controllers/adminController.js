@@ -438,7 +438,7 @@ const deleteUserByAdmin = async(req,res) =>
     }
     
 
-     res.status(200).json({message: "User Details Deleted Successfully by Admin !!",user
+     res.status(200).json({message: "User Details Deleted Successfully by Admin !!"
     });
         
     } 

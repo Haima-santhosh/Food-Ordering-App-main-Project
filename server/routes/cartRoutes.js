@@ -26,8 +26,8 @@ cartRouter.delete('/clear-cart',authUser, clearCart)
 
 
 //Remove an item from the cart
-// DELETE http://localhost:3000/api/cart/:itemId
-cartRouter.delete('/:itemId',authUser, deleteItemFromCart)
+// DELETE http://localhost:3000/api/cart/remove-item/:itemId
+cartRouter.delete('/remove-item/:itemId',authUser, deleteItemFromCart)
 
 
 

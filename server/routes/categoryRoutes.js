@@ -30,12 +30,12 @@ categoryRouter.delete('/delete-category/:categoryId',authAdmin,deleteCategoryByA
 
 
 // VIEW all Categories by User
-// GET http://localhost:3000/api/category
-categoryRouter.get('/',getCategoryByUser)
+// GET http://localhost:3000/api/category/get-category
+categoryRouter.get('/get-category',getCategoryByUser)
 
 // VIEW Single Category Details  by User
-// GET http://localhost:3000/api/category/:categoryId
-categoryRouter.get('/:categoryId',getCategoryDataByUser)
+// GET http://localhost:3000/api/category/get-category/:categoryId
+categoryRouter.get('/get-category/:categoryId',getCategoryDataByUser)
 
 
 module.exports = categoryRouter

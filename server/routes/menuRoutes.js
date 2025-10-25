@@ -33,18 +33,18 @@ menuRouter.delete('/delete-menu/:menuId',authAdmin,deleteMenuByAdmin)
 
 
 // VIEW all Menu by User
-// GET http://localhost:3000/api/menu
-menuRouter.get('/',getMenuByUser)
+// GET http://localhost:3000/api/menu/get-menu
+menuRouter.get('/get-menu',getMenuByUser)
 
 
 
 // Get All Menu Items by Category
-// GET /api/menu/category/:categoryId
-menuRouter.get('/category/:categoryId',authUser, getMenuDataByCategory)
+// GET /api/menu/category/get-category/:categoryId
+menuRouter.get('/get-category-menu/:categoryId',authUser, getMenuDataByCategory)
 
 // VIEW Single Menu Details  by User
-// GET http://localhost:3000/api/menu/:menuId
-menuRouter.get('/:menuId',authUser, getMenuDataByUser)
+// GET http://localhost:3000/api/get-menu-details/:menuId
+menuRouter.get('/get-menu-details/:menuId',authUser, getMenuDataByUser)
 
 
 module.exports = menuRouter

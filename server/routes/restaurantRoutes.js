@@ -31,12 +31,12 @@ restaurantRouter.delete('/delete-restaurant/:restId',authAdmin,deleteRestaurantB
 
 
 // VIEW all Restaurants by User
-// GET http://localhost:3000/api/restaurants
-restaurantRouter.get('/',authUser,getRestaurantByUser)
+// GET http://localhost:3000/api/restaurants/view-restaurants
+restaurantRouter.get('/view-restaurants',authUser,getRestaurantByUser)
 
 // VIEW Single Restaurant Details  by User
-// GET http://localhost:3000/api/restaurants/:restId
-restaurantRouter.get('/:restId',authUser,getRestaurantDataByUser)
+// GET http://localhost:3000/api/restaurants/view-single-restaurant/:restId
+restaurantRouter.get('/view-single-restaurant/:restId',authUser,getRestaurantDataByUser)
 
 
 module.exports = restaurantRouter

@@ -209,7 +209,7 @@ const Coupon = require('../models/couponModel')
    
     //save Order
     await order.save()
-   res.status(200).json({message:"Order Cancelled Successfully By User!!"}) 
+   res.status(200).json({message:"Ordr Cancelled Successfully By User!!"}) 
 } 
     catch (error) 
     {
@@ -342,7 +342,7 @@ const updateOrderStatus = async(req,res) =>
     order.status= status
     await order.save()
 
-    res.status(200).json({message:`Oreder status updated to '${status}' successfully !!!!`,order})
+    res.status(200).json({message:`Order status updated to '${status}' successfully !!!!`,order})
 
     
   } 
