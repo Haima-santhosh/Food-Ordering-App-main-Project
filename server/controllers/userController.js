@@ -3,6 +3,13 @@ const bcrypt = require('bcrypt');
 
 const generateToken = require('../utils/generateToken');
 
+// cloudinary
+const {cloudinaryInstance} = require('../config/cloudinary')
+
+//multer
+
+const upload = require('../middlewares/multer')
+
 
 // SIGNUP New User
 const register = async(req,res) =>
@@ -261,13 +268,35 @@ const updateUser = async(req,res) =>
     {
     
      
-    const{name,email,password,profilePic,address,phone} = req.body || {}    
-
+    const{name,email,password,address,phone} = req.body || {} 
+    
+    
+    const file = req.file //from multer
+     let cloudinaryResponse;
+     // Upload Profile Pic only if file exists
+    if(file)
+    {
+      cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
+      console.log(cloudinaryResponse.secure_url);
+    }
+    
     // req.user EXTRACT from authUser middleware
     const userId = req.user.id
+
+    let hashedPassword = password
+
+    // update password in hashed form
+    if(password)
+    {
+      const bcrypt = require('bcrypt');
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
      
      // Find user in DB using field projection method to remove password in response
-    const user = await User.findByIdAndUpdate(userId,{name,email,password,profilePic,address,phone},{new:true,runValidators:true}).select('-password')
+    const user = await User.findByIdAndUpdate(userId,{name,email,password:hashedPassword,
+        profilePic:cloudinaryResponse ? cloudinaryResponse.secure_url:undefined,
+        address,phone},{new:true,runValidators:true}).select('-password')
 
      if (!user) {
       return res.status(404).json({ message: "User not found" })

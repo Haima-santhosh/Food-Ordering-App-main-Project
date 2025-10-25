@@ -58,7 +58,7 @@ if(restaurantExists)
 
 // Create New Restaurant
 
-const newRestaurant = new Restaurant({restName,rating : rating || 0,deliveryTime,cuisineType,address: address || [],averagePrice,image:cloudinaryResponse.url})
+const newRestaurant = new Restaurant({restName,rating : rating || 0,deliveryTime,cuisineType,address: address || [],averagePrice,image:cloudinaryResponse.secure_url})
 const savedRestaurant = await newRestaurant.save()
 
 

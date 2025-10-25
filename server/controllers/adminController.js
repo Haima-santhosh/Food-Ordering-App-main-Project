@@ -3,7 +3,12 @@ const bcrypt = require('bcrypt');
 
 const generateToken = require('../utils/generateToken');
 
+// cloudinary
+const {cloudinaryInstance} = require('../config/cloudinary')
 
+//multer
+
+const upload = require('../middlewares/multer')
 
 
 // SIGNUP New Admin
@@ -18,6 +23,8 @@ try {
 const{name,email,password,profilePic} = req.body || {}
 
 console.log(name,email,password);
+
+ 
 
 // Check Validation
 
@@ -233,6 +240,66 @@ const profile = async(req,res) =>
 
 }
 
+
+
+// UPDATE ADMIN DETAILS BY ADMIN
+
+const updateProfile = async(req,res) =>
+{
+    try 
+    {
+    
+     
+    const{name,email,password} = req.body || {} 
+    
+    
+    const file = req.file //from multer
+     let cloudinaryResponse;
+     // Upload Profile Pic only if file exists
+    if(file)
+    {
+      cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
+      console.log(cloudinaryResponse.secure_url);
+    }
+    
+    // req.user EXTRACT from authUser middleware
+    const adminId = req.admin.id
+
+    let hashedPassword = password
+
+    // update password in hashed form
+    if(password)
+    {
+      const bcrypt = require('bcrypt');
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
+     
+     // Find user in DB using field projection method to remove password in response
+    const user = await User.findByIdAndUpdate(adminId,{name,email,password:hashedPassword,
+        profilePic:cloudinaryResponse ? cloudinaryResponse.secure_url:undefined,},
+        {new:true,runValidators:true}).select('-password')// field projection
+
+     if (!user) {
+      return res.status(404).json({ message: " User not found" })
+    }
+    
+    
+
+     res.status(200).json({message: "Profile Details Updated Successfully !!",user,
+    });
+        
+    } 
+    catch (error) 
+    {
+      console.log(error)
+    res.status(500).json({ error: "Internal Server Error" })  
+    }
+
+}
+
+
+// ADMIN LOGOUT
 const logout = async(req,res) =>
 {
      try
@@ -268,10 +335,9 @@ const updateUserByAdmin = async(req,res) =>
      
     // user ID of user to update, req.param EXTRACT from authAdmin middleware
      const { userId } = req.params; 
+
+
      
-    const{name,phone,address,role,isActive} = req.body || {}  
-    
-    
     // Prevent admin from updaiting their own account here
 
     if (req.admin.id === userId) {
@@ -279,9 +345,48 @@ const updateUserByAdmin = async(req,res) =>
     }
 
   
+     // fetch details to be updated from request body
+    const{name,phone,password,email,role,isActive,profilePic} = req.body || {}
+
+     let address = [];
+
+    // Parse address if provided , in form-data it is in string format , but address is in array format
+    if (req.body.address) {
+      try {
+        address = JSON.parse(req.body.address);
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid address format" });
+      }
+    } 
+    //for profile pic updation
+     const file = req.file //from multer
+
+    let hashedPassword = password
+
+    // update password in hashed form
+    if(password)
+    {
+      const bcrypt = require('bcrypt');
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
+     
+
+
+     let cloudinaryResponse;
+     // Upload Profile Pic only if file exists
+    if(file)
+    {
+      cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
+      console.log(cloudinaryResponse.secure_url);
+    }
+    
+    
      
      // Find user in DB using field projection method to remove password in response
-    const user = await User.findByIdAndUpdate(userId,{name,phone,role,isActive},{new:true,runValidators:true}).select('-address')
+    const user = await User.findByIdAndUpdate(userId,{name, email, password: hashedPassword, phone, 
+      address, role, isActive, profilePic:cloudinaryResponse.secure_url},
+      {new:true,runValidators:true})
 
      if (!user) {
       return res.status(404).json({ message: "User Not Found" })
@@ -333,7 +438,7 @@ const deleteUserByAdmin = async(req,res) =>
     }
     
 
-     res.status(200).json({message: "User Details Deleted Successfully by Admin !!",
+     res.status(200).json({message: "User Details Deleted Successfully by Admin !!",user
     });
         
     } 
@@ -347,4 +452,4 @@ const deleteUserByAdmin = async(req,res) =>
 
 
 
-module.exports = {register,login,checkAdmin,profile,logout,updateUserByAdmin,deleteUserByAdmin}
+module.exports = {register,login,checkAdmin,profile,logout,updateUserByAdmin,deleteUserByAdmin,updateProfile}

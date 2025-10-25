@@ -4,7 +4,7 @@ const authAdmin = require('../middlewares/authAdmin')
 const authUser = require('../middlewares/authUser')
 const {addReview,getAllReview,getSingleReview,getARestaurantReview,getAnItemReview,deleteReview,getReviewInAdmin,getSingleReviewInAdmin,updateReview,
   getARestaurantReviewInAdmin,
-  getAnItemReviewInAdmin,deleteReviewInAdmin} = require('../controllers/reviewController')
+  getAnItemReviewInAdmin,updateReviewInAdmin,deleteReviewInAdmin} = require('../controllers/reviewController')
 
 
 /**********************   ADMIN ROUTES ******************************/
@@ -18,24 +18,24 @@ reviewRouter.get('/all-review', authAdmin, getReviewInAdmin)
 reviewRouter.get('/admin-item-review/:reviewId', authAdmin, getSingleReviewInAdmin)
 
 
-// Get  All Review for a Specific Restaurant in User Side
-// GET http://localhost:3000/api/review/admin/restaurant/:restId
+// Get  All Review for a Specific Restaurant in Admin Side
+// GET http://localhost:3000/api/review/admin-restaurant-review/:restId
 reviewRouter.get('/admin-restaurant-review/:restId', authAdmin, getARestaurantReviewInAdmin)
 
-// Get  All Review for a Specific Menu Item in User Side
-// GET http://localhost:3000/api/review/admin/menu/:itemId
+// Get  All Review for a Specific Menu Item in Admin Side
+// GET http://localhost:3000/api/review/admin-menu-review/:itemId
 reviewRouter.get('/admin-menu-review/:itemId', authAdmin, getAnItemReviewInAdmin)
 
 
 //Update review in Admin side
 // PATCH http://localhost:3000/api/review/admin/:reviewId
-// reviewRouter.patch('/admin-update/:reviewId', authAdmin, updateReview)
+reviewRouter.patch('/admin-update/:reviewId', authAdmin, updateReviewInAdmin)
 
 
 //Delete A Review in  Admin Side
 
 // DELETE http://localhost:3000/api/review/admin/restaurant/:reviewId
-// reviewRouter.delete('/admin-delete-review/:reviewId', authAdmin, deleteReviewInAdmin)
+reviewRouter.delete('/admin-delete-review/:reviewId', authAdmin, deleteReviewInAdmin)
 
 
 /**********************   USER ROUTES ******************************/

@@ -38,23 +38,26 @@ const userSchema = new mongoose.Schema({
 
     profilePic: {
     type: String,
-    default: "default.jpg"
+    
   },
 
    phone: { 
     type: String, 
    
-    unique: true 
+   
   },
 
-  address: [
-  {
-    street: String,
-    city: String,
-    state: String,
-    pincode: String
-  }
-],
+  address: {
+  type: [
+    {
+      street: String,
+      city: String,
+      state: String,
+      pincode: String
+    }
+  ],
+  default: undefined
+},
  isActive: { type: Boolean, default: true }
 },{timestamps:true})
 

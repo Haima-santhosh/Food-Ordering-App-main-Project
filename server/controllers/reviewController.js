@@ -372,8 +372,81 @@ const getAnItemReviewInAdmin = async(req,res) =>
 }
 
 
+// UPDATE A REVIEW BY ADMIN
+
+const updateReviewInAdmin = async(req,res) =>
+{
+    try
+     {
+          // fetch Review ID  to update  from request parameters
+
+               const { reviewId } = req.params; 
+        
+                // Extract review fields from request body
+                 const { comment, rating } = req.body
+
+              // Find review and update
+           const updatedReview = await Review.findByIdAndUpdate(reviewId, { comment, rating }, { new: true, runValidators: true })
+              
+             
+               
+              
+               if (!updateReview) {
+                return res.status(404).json({ message: "Review Not Found" })
+              }
+              
+              
+          
+               res.status(200).json({message: "Review Details Updated Successfully by Admin !!",review:updatedReview});
+                  
+    } 
+    catch (error) 
+    {
+
+        console.log(error)
+        res.status(500).json({ error: "Internal Server Error" })  
+        
+    }
+}
+
+// DELETE REVIEW BY ADMIN
+
+
+const deleteReviewInAdmin = async(req,res)=>
+{
+    try
+     {
+        
+        // Review ID of Review to delete, Extract from req.param 
+                  const { reviewId } = req.params;   
+                 
+             
+                  if (!reviewId) {
+                   return res.status(400).json({ message: "Review ID is Required" })
+                 }
+                  
+                  // Find review in DB using ID and delete
+                 const review = await Review.findByIdAndDelete(reviewId)
+             
+                 
+                 
+                  if (!review) {
+                   return res.status(404).json({ message: "review Not Found" })
+                 }
+                 
+             
+                  res.status(200).json({message: "Review Deleted Successfully by Admin !!",
+                 });   
+    } 
+    catch (error)
+     {
+      console.log(error)
+        res.status(500).json({ error: "Internal Server Error" })  
+    }
+}
+
 
    
 
 module.exports = { addReview,getAllReview,getSingleReview,updateReview,deleteReview,getARestaurantReview,
-getAnItemReview,getReviewInAdmin,getSingleReviewInAdmin,getARestaurantReviewInAdmin,getAnItemReviewInAdmin }
+getAnItemReview,getReviewInAdmin,getSingleReviewInAdmin,getARestaurantReviewInAdmin,getAnItemReviewInAdmin,updateReviewInAdmin,deleteReviewInAdmin }
