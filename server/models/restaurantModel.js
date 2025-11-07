@@ -38,7 +38,7 @@ const restaurantSchema = new mongoose.Schema(
       min: 0,
     },
 
-    // New field for image
+   
     image: {
       type: String,
      required: true

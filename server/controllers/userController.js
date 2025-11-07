@@ -91,7 +91,7 @@ catch (error) {
 
 }
 
-// LOGIN Existing User
+// SIGNIN Existing User
 
 const login = async(req,res) =>
 {
