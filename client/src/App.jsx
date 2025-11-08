@@ -37,6 +37,7 @@ import MenuManagement from "./pages/admin/MenuManagement";
 import CouponManagement from "./pages/admin/CouponManagement";
 import OrderManagement from "./pages/admin/OrderManagement";
 import ReviewManagement from "./pages/admin/ReviewManagement";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 //-------------PROTECTED ROUTES-------------------------
 function ProtectedRoute({ children }) {
@@ -130,15 +131,13 @@ function App() {
         </Route>
 
         {/* Admin Side Pages */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedAdminRoute>
-              <AdminLayout />
-            </ProtectedAdminRoute>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
+    <Route path="/admin" element={
+
+    <ProtectedAdminRoute>
+      <AdminLayout />
+    </ProtectedAdminRoute>
+  }>
+        <Route index element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="restaurants" element={<RestaurantManagement />} />
           <Route path="categories" element={<CategoryManagement />} />
@@ -146,6 +145,7 @@ function App() {
           <Route path="coupons" element={<CouponManagement />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="reviews" element={<ReviewManagement />} />
+           <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Routes>
     </UserProvider>
