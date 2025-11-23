@@ -23,14 +23,11 @@ const restaurantSchema = new mongoose.Schema(
       required: true,
     },
 
-    address: [
-      {
-        street: String,
-        city: String,
-        state: String,
-        pincode: String,
-      },
-    ],
+   address: {
+  type: String,
+  required: true,
+}
+,
 
     averagePrice: {
       type: Number,

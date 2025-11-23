@@ -9,7 +9,7 @@ const authUser = require('../middlewares/authUser')
 // Add New Menu by ADMIN
 // POST http://localhost:3000/api/menu/add-menu
 
-menuRouter.post('/add-menu', authAdmin,upload.single('image'), addMenu)
+menuRouter.post('/add-menu', authAdmin,upload.single('itemImage'), addMenu)
 
 
 //VIEW all Menu Items by ADMIN
@@ -25,7 +25,7 @@ menuRouter.get('/view-menu/:menuId',authAdmin,viewMenu)
 
 // UPDATE Menu by ADMIN
 // PATCH http://localhost:3000/api/menu/update-menu/:menuId
-menuRouter.patch('/update-menu/:menuId',authAdmin,upload.single('image'),updateMenuByAdmin)
+menuRouter.patch('/update-menu/:menuId',authAdmin,upload.single('itemImage'),updateMenuByAdmin)
 
 // DELETE Menu  by ADMIN
 // DELETE http://localhost:3000/api/menu/delete-menu/:menuId

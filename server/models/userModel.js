@@ -48,15 +48,8 @@ const userSchema = new mongoose.Schema({
   },
 
   address: {
-  type: [
-    {
-      street: String,
-      city: String,
-      state: String,
-      pincode: String
-    }
-  ],
-  default: undefined
+  type: String,
+ 
 },
  isActive: { type: Boolean, default: true }
 },{timestamps:true})

@@ -92,33 +92,33 @@ const Coupon = require('../models/couponModel')
   
     //GET ALL ORDERS FROM USER SIDE
 
-    const getOrders = async(req,res) =>
-    {
-        try 
-        {
-        // Get user ID from authUser middleware
-        const userId = req.user.id
+  // GET ALL ORDERS FROM USER SIDE
+const getOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-        // Find orders for the logged-in user
-        const order = await Order.find({ userId })
+    // Populate items and restaurant
+    const orders = await Order.find({ userId })
+      .populate({
+        path: "items.itemId",
+        select: "itemName itemImage price", // menu fields
+      })
+      .populate({
+        path: "restId",
+        select: "restName", // restaurant name
+      });
 
-         //check if there is any orders
-        if (!order) {
-          return res.status(404).json({ message: "Order is not Found" });
-        }
-      
-          //send response
-            res.status(200).json({message: "Order Details fetched successfully",order})
-            
-        } 
-        catch (error) 
-        {
-
-        console.log(error)
-        res.status(500).json({ error: "Internal Server Error" })    
-            
-        }
+    if (!orders || orders.length === 0) {
+      return res.status(200).json({ order: [] });
     }
+
+    res.status(200).json({ order: orders });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
   
     //GET SINGLE ORDER FROM USER SIDE
 
@@ -169,58 +169,34 @@ const Coupon = require('../models/couponModel')
 
       // CANCEL ORDER BY USER
    
-   const cancelOrder = async(req,res)=>
-   {
-    try 
-    {
+  // Cancel an order by user
+// Check order exists, cannot cancel delivered or already cancelled orders
+const cancelOrder = async (req, res) => {
+  try {
+    // Get order ID from URL params
+    const orderId = req.params.orderId;
 
-        // Get user ID from authUser middleware
-        const userId = req.user.id
+    // Find the order in DB
+    const order = await Order.findById(orderId);
 
-        // Fetch order details from request parameters
-          const { orderId } = req.params
-        
-        // find the order
-    const order = await Order.findOne({ _id: orderId, userId })//ensures the order belongs to the currently logged-in user
-     
-    // check if the order is there
+    // If not found, return 404
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
-    if(!order)
-    {
-        return res.status(404).json({error:"Order is not Found"})
+    // Prevent cancelling delivered or already cancelled orders
+    if (order.status === "delivered" || order.status === "cancelled") {
+      return res.status(400).json({ message: "Cannot cancel this order" });
     }
-
-    // check the order status
-    if(order.status==='cancelled')
-     {
-         return res.status(400).json({message:"Order is already Cancelled"}) 
-    }
-    if(order.status==='delivered') 
-    {
-       return res.status(400).json({message:"Delivered Orders Can Not Be Cancelled"}) 
-    }
-     
 
     // Update status to cancelled
     order.status = "cancelled";
-   
-  
-   
-   
-    //save Order
-    await order.save()
-   res.status(200).json({message:"Ordr Cancelled Successfully By User!!"}) 
-} 
-    catch (error) 
-    {
+    await order.save();
 
-         console.log(error)
-        res.status(500).json({ error: "Internal Server Error" })
-        
-    }
-}
-
-
+    res.status(200).json({ message: "Order cancelled successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 
      //VIEW ALL ORDERS IN ADMIN SIDE
@@ -353,6 +329,28 @@ const updateOrderStatus = async(req,res) =>
   }
 }
 
+// Cancel  order by Admin
+const cancelOrderByAdmin = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // Optionally prevent cancelling delivered orders
+    if (order.status === "delivered") {
+      return res.status(400).json({ message: "Cannot cancel a delivered order" });
+    }
+
+    order.status = "cancelled"; // soft delete
+    await order.save();
+
+    res.status(200).json({ message: "Order cancelled successfully by admin" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 
 
@@ -361,4 +359,4 @@ const updateOrderStatus = async(req,res) =>
 
 
 
-module.exports = { addOrders,getOrders,getSingleOrder,getOrdersByAdmin,getSingleOrderByAdmin,cancelOrder,updateOrderStatus }
+module.exports = { addOrders,getOrders,getSingleOrder,getOrdersByAdmin,getSingleOrderByAdmin,cancelOrder,updateOrderStatus,cancelOrderByAdmin }

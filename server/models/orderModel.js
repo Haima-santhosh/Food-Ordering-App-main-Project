@@ -21,15 +21,8 @@ const orderSchema = new mongoose.Schema(
           ref: "Menu",
           required: true,
         },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-        },
-        price: {
-          type: Number,
-          required: true,
-        },
+        quantity: { type: Number, required: true, min: 1 },
+        price: { type: Number, required: true },
       },
     ],
 
@@ -39,10 +32,13 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    amount: {
-      type: Number,
-      required: true,
+    // ⭐ Add this
+    couponName: {
+      type: String,
+      default: null,
     },
+
+    amount: { type: Number, required: true },
 
     deliveryAddress: {
       type: String,
@@ -51,27 +47,25 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        "pending",
-        "confirmed",
-        "preparing",
-        "out_for_delivery",
-        "delivered",
-        "cancelled",
-      ],
+      enum: ["pending", "confirmed", "preparing", "out_for_delivery", "delivered", "cancelled"],
       default: "pending",
     },
 
     paymentStatus: {
       type: String,
-      enum: ["unpaid", "paid", "refunded"],
-      default: "unpaid",
+      enum: ["Completed", "Cancelled"],
+      default: "Completed",
     },
 
     paymentMethod: {
       type: String,
-      enum: ["cod", "online"],
-      default: "cod", 
+      enum: ["card"],
+      default: "card",
+    },
+
+    stripeSessionId: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

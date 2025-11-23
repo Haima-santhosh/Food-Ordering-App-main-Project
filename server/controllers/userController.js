@@ -12,7 +12,7 @@ const upload = require('../middlewares/multer')
 
 
 // SIGNUP New User
-const register = async(req,res) =>
+const signup = async(req,res) =>
 {
 
 try {
@@ -93,7 +93,7 @@ catch (error) {
 
 // SIGNIN Existing User
 
-const login = async(req,res) =>
+const signin = async(req,res) =>
 {
     try {
 
@@ -170,7 +170,7 @@ const token = generateToken(userExists._id, 'user');
 
  // Send response
 
-return res.status(200).json({message: "Login successful!", userObject
+return res.status(200).json({message: "Sign In Successful!", userObject
     })
 }
 
@@ -318,4 +318,4 @@ const updateUser = async(req,res) =>
 
 
 
-module.exports = {register,login,checkUser,profile,logout,updateUser}
+module.exports = {signup,signin,checkUser,profile,logout,updateUser}

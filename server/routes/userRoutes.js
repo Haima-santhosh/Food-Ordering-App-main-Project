@@ -1,18 +1,18 @@
 const express = require('express')
 const userRouter = express.Router()
 const authUser = require('../middlewares/authUser')
-const{register,login,checkUser,profile,logout,updateUser} = require('../controllers/userController')
+const{signup,signin,checkUser,profile,logout,updateUser} = require('../controllers/userController')
 const upload = require('../middlewares/multer')
 
 
-// REGISTER New Users
-// POST http://localhost:3000/api/user/register
-userRouter.post('/user-register',upload.single('profilePic'),register)
+// SIGNUP New Users
+// POST http://localhost:3000/api/user/signup
+userRouter.post('/user-signup',upload.single('profilePic'),signup)
 
 
-// Login Existing Users
-// POST http://localhost:3000/api/user/login
-userRouter.post('/user-login',login)
+// SIGNIN Existing Users
+// POST http://localhost:3000/api/user/signin
+userRouter.post('/user-signin',signin)
 
 //checks if the current logged-in person is a valid, authenticated user
 // GET http://localhost:3000/api/user/check-user

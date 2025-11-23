@@ -1,17 +1,17 @@
 const express = require('express')
 const adminRouter = express.Router()
 const authAdmin = require('../middlewares/authAdmin')
-const{register,login,checkAdmin,profile,logout,updateUserByAdmin,deleteUserByAdmin,updateProfile} = require('../controllers/adminController')
+const{signup,signin,checkAdmin,profile,logout,getAllUsers,updateUserByAdmin,deleteUserByAdmin,updateProfile} = require('../controllers/adminController')
 const upload = require('../middlewares/multer')
 
 // REGISTER New Admin
-// http://localhost:3000/api/admin/register
-adminRouter.post('/admin-register',authAdmin,register)
+// http://localhost:3000/api/admin/signup
+adminRouter.post('/admin-signup',signup)
 
 
 // Login Existing Admin
-// http://localhost:3000/api/admin/login
-adminRouter.post('/admin-login',login)
+// http://localhost:3000/api/admin/signin
+adminRouter.post('/admin-signin',signin)
 
 //checks if the current logged-in person is a valid, authenticated Admin
 // http://localhost:3000/api/admin/check-admin
@@ -30,9 +30,15 @@ adminRouter.patch('/update-admin',authAdmin,upload.single('profilePic'),updatePr
 //http://localhost:3000/api/admin/logout
 adminRouter.post('/admin-logout',authAdmin,logout)
 
+// GET ALL USERS IN ADMIN SIDE
+//http://localhost:3000/api/admin/users
+adminRouter.get('/users', authAdmin, getAllUsers);
+
 // UPDATE USER INFORMATIONS by ADMIN
 //http://localhost:3000/api/admin/update-user/:userId
 adminRouter.patch('/update-user/:userId',authAdmin,upload.single('profilePic'),updateUserByAdmin)
+
+
 
 // DELETE USER  by ADMIN
 //http://localhost:3000/api/admin/delete-user/:userId

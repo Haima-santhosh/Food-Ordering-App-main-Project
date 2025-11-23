@@ -12,102 +12,75 @@ const upload = require('../middlewares/multer')
 
 // ADD NEW Menu BY ADMIN
 
-const addMenu = async(req,res) =>
-{
+const addMenu = async (req, res) => {
+  try {
+    const { restId, categoryId, itemName, itemDescription, price, rating } = req.body;
 
-try {
-
-    
-// Take required Menu details from request
-
-const {restId, categoryId, itemName, itemDescription, price,rating } = req.body || {};
-
-// Extract Menu fields from request body
-
-//console.log(restId, categoryId, itemName, itemDescription, price)
-
-
-// Upload Menu Images 
-const file = req.file //from multer
-const cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path)
-const imageUrl = cloudinaryResponse.secure_url;
-console.log(imageUrl);
-
-
-
-// Check Validation
-
-if (!restId || !categoryId || !itemName || !itemDescription || !price || !rating || !imageUrl ) 
-{
-    return res.status(400).json({message :"Please Fill All Required Field"})
-    
+if (!restId || !categoryId || !itemName || !itemDescription || !price || !rating || !req.file) {
+  return res.status(400).json({ message: "Please fill all required fields!" });
 }
 
+    // Upload image to Cloudinary
+    const file = req.file;
+    const cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
+    const imageUrl = cloudinaryResponse.secure_url;
 
-// Check if the Menu item is already exists
+    // Check if menu item already exists
+    const menuExists = await Menu.findOne({ itemName, restId, categoryId });
+    if (menuExists) {
+      return res.status(400).json({ message: "Menu item already exists!" });
+    }
 
+    // Create new menu item
+   const newMenu = new Menu({
+  restId,
+  categoryId,
+  itemName,
+  itemDescription,
+  price,
+  rating,
+  itemImage: imageUrl,
+});
 
-const menuExists = await Menu.findOne({itemName})
-if(menuExists)
-{
-    return res.status(400).json({"message":"Menu Already Exists"})
-}
+    const savedMenu = await newMenu.save();
 
+    return res.status(201).json({
+      message: "Menu item created successfully!",
+      savedMenu,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(error.status || 500).json({ error: error.message || "Internal Server Error" });
+  }
+};
 
-
-// Create New Menu item
-
-const newMenu = new Menu({restId, categoryId, itemName, itemImage:imageUrl, itemDescription,rating, price,})
-const savedMenu = await newMenu.save()
-
-
-
-// Send response for newly created Menu item
-
-return res.status(201).json({message:"Menu Item is Created Successfully by Admin !!",savedMenu})
-
-}
-
-
-catch (error) {
-
- console.log(error);
- res.status(error.status||500).json({error:error.message || " Internal Server Error"})
-    
-}
-
-}
 
 
 
 
 // VIEW ALL Menu BY ADMIN
 
-const allMenu = async(req,res)=>
-{
-    try {
+const allMenu = async(req, res) => {
+  try {
+    const menus = await Menu.find()
+      .populate('restId', 'restName')        // fetch restaurant name
+      .populate('categoryId', 'categoryName'); // fetch category name
 
-         // Fetch all Categories from the database
-        const categories = await Menu.find()  
-
-         // If there is no Menu
-        if(!categories || categories.length=== 0) 
-            {
-            return res.status(404).json({message:"No Menu is Found"})    
+    if (!menus || menus.length === 0) {
+      return res.status(404).json({ message: "No menu found" });
     }
 
-    //send response
-    return res.status(200).json({message:"Menu List Fetched Successfully!!",categories})
-}
+    return res.status(200).json({
+      message: "Menu List Fetched Successfully!!",
+      menus, // frontend expects 'menus'
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(error.status || 500).json({ error: error.message || "Internal Server Error" });
+  }
+};
 
-    catch (error) 
-    {
-        console.log(error);
-        res.status(error.status||500).json({error:error.message || " Internal Server Error"})
-    
-        
-    }
-}
+
 
 // VIEW SINGLE Menu DATA BY ID IN ADMIN SIDE
 
@@ -154,49 +127,42 @@ const viewMenu = async(req,res)=>
 
 // UPDATE Menu INFORMATIONS by ADMIN
 
-const updateMenuByAdmin = async(req,res) =>
-{
-  {
-      try 
-      {
-       
-      // Menu ID of Menu to update  from request parameters
-       const { menuId } = req.params; 
+const updateMenuByAdmin = async (req, res) => {
+  try {
+    const { menuId } = req.params;
+    const { restId, categoryId, itemName, itemDescription, price, rating } = req.body;
 
-       // Extract Menu fields from request body
-      const { restId, categoryId, itemName, itemDescription, price } = req.body || {}
-      
-        // Handle image upload from multer if image already uploaded
-       let imageUrl;
-       if (req.file) 
-        {
+    // Handle image upload
+    let imageUrl;
+    if (req.file) {
       const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
-      console.log(cloudinaryResponse);
       imageUrl = cloudinaryResponse.secure_url;
-        }
-       
-       
-       // Find Menu in DB and update
-      const menu = await Menu.findByIdAndUpdate(menuId,{restId, categoryId, itemName, itemDescription, price,image: imageUrl || image},{new:true,runValidators:true})
-  
-       if (!menu) {
-        return res.status(404).json({ message: "Menu Not Found" })
-      }
-      
-      
-  
-       res.status(200).json({message: "Menu Details Updated Successfully by Admin !!",menu
-      });
-          
-      } 
-      catch (error) 
+    }
+
+    // Update menu
+    const menu = await Menu.findByIdAndUpdate(
+      menuId,
       {
-        console.log(error)
-      res.status(500).json({ error: "Internal Server Error" })  
-      }
-  
+        restId,
+        categoryId,
+        itemName,
+        itemDescription,
+        price,
+        rating,
+        ...(imageUrl && { itemImage: imageUrl }),
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!menu) return res.status(404).json({ message: "Menu not found" });
+
+    res.status(200).json({ message: "Menu updated successfully", menu });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message || "Internal Server Error" });
   }
-} 
+};
+
 
   // DELETE A Menu BY ADMIN
 

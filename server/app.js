@@ -2,35 +2,52 @@ const express = require('express')
 const app = express()
 require('dotenv').config()
 const cookieParser = require('cookie-parser')
+const cors = require('cors')
 
 const port = process.env.PORT
 const connectDB = require('./config/db')
 
 const router = require('./routes/')
 
-// Middleware to parse JSON body in requests
+
+// Parse cookies
+app.use(cookieParser())
+
+// -------- CORS FIX --------
+app.use(
+  cors({
+    origin: "http://localhost:5173",    // your frontend
+    credentials: true,                  // allow cookies
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookies",
+      "X-Requested-With",
+      "Accept"
+    ],
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  })
+);
+
+// ---------------------------
+
+// Parse JSON
 app.use(express.json())
 
-// Middleware to parse cookies from requests
-app.use(cookieParser())
-// Middleware to parse form data from requests
+
+
+// Parse form data
 app.use(express.urlencoded({ extended: true }))
 
-
-// http://localhost:3000/api
-app.use('/api',router)
-
+// All API routes use /api prefix
+app.use('/api', router)
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-//Connect to Database
-
- connectDB();
-
-
- 
+// Connect to database
+connectDB()
 
 app.listen(port, () => {
   console.log(`Server running at: http://localhost:${port}`)

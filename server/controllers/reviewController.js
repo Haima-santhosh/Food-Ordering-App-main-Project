@@ -7,74 +7,69 @@ const Review = require('../models/reviewModel')
 
     // CREATE NEW Review
 
-    const addReview = async(req,res)=>
-    {
-        try 
-        {
-            //get logged-in user ID from authUser middleware
-            const userId = req.user.id
+    const addReview = async (req, res) => {
+  try {
+    const userId = req.user?.id;  // safe check
+    const { restId, itemId, rating, comment } = req.body;
 
-            //get Review details by request body
-              const { restId, itemId, rating, comment } = req.body;
-
-            //check for validation
-            if(!restId ||  !itemId || !comment)
-            {
-                return res.status(400).json({message:"Required All Fields"})
-            }
-
-
-
-          // Create New Review
-          
-          const newReview = new Review({restId,itemId,userId,rating,comment})
-          const savedReview = await newReview.save()
-          
-
-
-           // Save Revie
-          await newReview.save()
-
-          
-
-                 return res.status(201).json({message:"Review  Created Successfully !!!",review:newReview})
-
-            }
-            
-        
-        catch (error) 
-        {
-        console.log(error)
-        res.status(500).json({ error: "Internal Server Error" })     
-        }
+    if (!restId || !itemId || !comment || !rating) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    //GET ALL REVIEWS POSTED BY THE USER
+    const newReview = new Review({
+      restId,
+      itemId,
+      userId,
+      rating: parseFloat(rating),
+      comment,
+    });
 
-    const getAllReview = async(req,res) =>
-    {
-        try 
-        {
+    const savedReview = await newReview.save();
 
-        // Get logged-in user ID from authUser middleware
-        const userId = req.user.id;
+    return res.status(201).json({
+      message: "Review Created Successfully!",
+      review: savedReview,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+  
 
-        // Find all reviews where userId matches with the logged user's ID
-        const reviews = await Review.find({ userId })
-            .populate('restId', 'name')   
-            .populate('itemId', 'name')
 
-            res.status(200).json({message:"All Reviews Posted By You",reviews})
-            
-        } 
-        catch (error)
-         {
-        console.log(error)
-        res.status(500).json({ error: "Internal Server Error" })     
-        } 
-        
-        
-        }
+
+  // GET ALL REVIEWS POSTED BY THE LOGGED USER
+const getAllReview = async (req, res) => {
+  try {
+
+    // get logged user id from auth middleware
+    const userId = req.user.id;
+
+    // get all reviews of this user
+    // also load menu item details (name, image)
+    // also load restaurant name and image
+   const reviews = await Review.find()
+  .populate('userId', 'name email')
+  .populate('restId', 'restName image') 
+  .populate('itemId', 'itemName itemImage')
+
+
+    // send response
+    res.status(200).json({
+      message: "All Reviews Posted By You",
+      reviews,
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    // send error
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 
    //GET A SINGLE REVIEW POSTED BY THE USER       
     
@@ -258,10 +253,11 @@ const getReviewInAdmin = async(req,res)=>
         // Admin need to view all reviews 
 
         // Fetch all reviews 
-        const reviews = await Review.find()
-            .populate('userId', 'name email')    // user who posted review
-             .populate('restId', 'name location') // restaurant details
-             .populate('itemId', 'name price');   
+       const reviews = await Review.find()
+  .populate('userId', 'name email')
+  .populate('restId', 'restName image')
+  .populate('itemId', 'itemName itemImage');
+
 
             res.status(200).json({message:"All Reviews Posted By All Users In Admin Side",reviews})
             

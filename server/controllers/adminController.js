@@ -12,7 +12,7 @@ const upload = require('../middlewares/multer')
 
 
 // SIGNUP New Admin
-const register = async(req,res) =>
+const signup = async(req,res) =>
 {
 
 try {
@@ -94,9 +94,9 @@ catch (error) {
 
 }
 
-// LOGIN Existing Admin
+// SIGNIN Existing Admin
 
-const login = async(req,res) =>
+const signin = async(req,res) =>
 {
     try {
 
@@ -138,7 +138,7 @@ if(!adminExists)
 // console.log("Plain password:", password);
 // console.log("Hashed password from DB:", adminExists.password);
 
-// check role is admin before login
+// check role is admin before signin
 
 if (adminExists.role !== "admin") {
   return res.status(403).json({ message: "Access denied. Not an admin." });
@@ -181,7 +181,7 @@ const token = generateToken(adminExists._id, 'admin');
 
  // Send response
 
-return res.status(200).json({message: "Admin Login successful!", admin: adminObject
+return res.status(200).json({message: "Admin Sign In successful!", admin: adminObject
     })
 }
 
@@ -244,59 +244,55 @@ const profile = async(req,res) =>
 
 // UPDATE ADMIN DETAILS BY ADMIN
 
-const updateProfile = async(req,res) =>
-{
-    try 
-    {
-    
-     
-    const{name,email,password} = req.body || {} 
-    
-    
-    const file = req.file //from multer
-     let cloudinaryResponse;
-     // Upload Profile Pic only if file exists
-    if(file)
-    {
-      cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
-      console.log(cloudinaryResponse.secure_url);
-    }
-    
-    // req.user EXTRACT from authUser middleware
-    const adminId = req.admin.id
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    let profilePicUrl;
 
-    let hashedPassword = password
-
-    // update password in hashed form
-    if(password)
-    {
-      const bcrypt = require('bcrypt');
-      const salt = await bcrypt.genSalt(10);
-      hashedPassword = await bcrypt.hash(password, salt);
-    }
-     
-     // Find user in DB using field projection method to remove password in response
-    const user = await User.findByIdAndUpdate(adminId,{name,email,password:hashedPassword,
-        profilePic:cloudinaryResponse ? cloudinaryResponse.secure_url:undefined,},
-        {new:true,runValidators:true}).select('-password')// field projection
-
-     if (!user) {
-      return res.status(404).json({ message: " User not found" })
-    }
-    
-    
-
-     res.status(200).json({message: "Profile Details Updated Successfully !!",user,
-    });
-        
-    } 
-    catch (error) 
-    {
-      console.log(error)
-    res.status(500).json({ error: "Internal Server Error" })  
+    // Handle profile pic upload
+    if (req.file) {
+      const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+      profilePicUrl = cloudinaryResponse.secure_url;
     }
 
-}
+    // Admin ID from auth middleware
+    const adminId = req.admin.id;
+
+    // Build update object dynamically
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (profilePicUrl) updateData.profilePic = profilePicUrl;
+
+    // Update admin in DB, exclude password
+    const admin = await User.findByIdAndUpdate(adminId, updateData, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+    res.status(200).json({ message: "Profile updated successfully!", admin });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+// GET all users for admin
+const getAllUsers = async (req, res) => {
+  try {
+    // fetch all users, exclude password
+   const users = await User.find({ role: 'user' }).select('-password');
+
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to fetch users" });
+  }
+};
 
 
 // ADMIN LOGOUT
@@ -328,83 +324,56 @@ const logout = async(req,res) =>
 
 // UPDATE USER DETAILS BY ADMIN
 
-const updateUserByAdmin = async(req,res) =>
-{
-    try 
-    {
-     
-    // user ID of user to update, req.param EXTRACT from authAdmin middleware
-     const { userId } = req.params; 
-
-
-     
-    // Prevent admin from updaiting their own account here
+const updateUserByAdmin = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
     if (req.admin.id === userId) {
       return res.status(403).json({ message: "Admin can’t update their own account here." });
     }
 
-  
-     // fetch details to be updated from request body
-    const{name,phone,password,email,role,isActive,profilePic} = req.body || {}
+    // Extract fields from request body
+    const { name, phone, email, role, isActive } = req.body || {};
 
-     let address = [];
-
-    // Parse address if provided , in form-data it is in string format , but address is in array format
+    let address = [];
     if (req.body.address) {
       try {
         address = JSON.parse(req.body.address);
       } catch (err) {
         return res.status(400).json({ message: "Invalid address format" });
       }
-    } 
-    //for profile pic updation
-     const file = req.file //from multer
-
-    let hashedPassword = password
-
-    // update password in hashed form
-    if(password)
-    {
-      const bcrypt = require('bcrypt');
-      const salt = await bcrypt.genSalt(10);
-      hashedPassword = await bcrypt.hash(password, salt);
-    }
-     
-
-
-     let cloudinaryResponse;
-     // Upload Profile Pic only if file exists
-    if(file)
-    {
-      cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
-      console.log(cloudinaryResponse.secure_url);
-    }
-    
-    
-     
-     // Find user in DB using field projection method to remove password in response
-    const user = await User.findByIdAndUpdate(userId,{name, email, password: hashedPassword, phone, 
-      address, role, isActive, profilePic:cloudinaryResponse.secure_url},
-      {new:true,runValidators:true})
-
-     if (!user) {
-      return res.status(404).json({ message: "User Not Found" })
-    }
-    
-    
-
-     res.status(200).json({message: "User Details Updated Successfully by Admin !!",user
-    });
-        
-    } 
-    catch (error) 
-    {
-      console.log(error)
-    res.status(500).json({ error: "Internal Server Error" })  
     }
 
-}
+    // Handle profilePic if uploaded via multer
+    let profilePicUrl;
+    if (req.file) {
+      const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+      profilePicUrl = cloudinaryResponse.secure_url;
+    }
+
+    // Build update object dynamically (only send fields that exist)
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (phone) updateData.phone = phone;
+    if (role) updateData.role = role;
+    if (typeof isActive !== "undefined") updateData.isActive = isActive;
+    if (address.length) updateData.address = address;
+    if (profilePicUrl) updateData.profilePic = profilePicUrl;
+
+    // Update user in DB
+    const user = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select("-password");
+
+    if (!user) return res.status(404).json({ message: "User Not Found" });
+
+    res.status(200).json({ message: "User Details Updated Successfully by Admin !!", user });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 // DELETE USER  BY ADMIN
 
@@ -452,4 +421,4 @@ const deleteUserByAdmin = async(req,res) =>
 
 
 
-module.exports = {register,login,checkAdmin,profile,logout,updateUserByAdmin,deleteUserByAdmin,updateProfile}
+module.exports = {signup,signin,checkAdmin,profile,logout,getAllUsers,updateUserByAdmin,deleteUserByAdmin,updateProfile}

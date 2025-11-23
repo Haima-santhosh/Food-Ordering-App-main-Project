@@ -1,69 +1,57 @@
 const Coupon = require('../models/couponModel')
 const Cart = require('../models/cartModel');
 
+//ADD NEW COUPON BY ADMIN
+  const addCoupon = async (req, res) => {
+  try {
+    const {
+      code,
+      discount,
+      minOrderValue,
+      validFrom,
+      validTill,
+      isActive
+    } = req.body || {};
 
-  // Create a new coupon BY ADMIN
+    // VALIDATION 
+    if (
+      !code ||
+      discount === undefined ||
+      minOrderValue === undefined ||
+      !validFrom ||
+      !validTill ||
+      isActive === undefined
+    ) {
+      return res.status(400).json({ message: "Please Fill All Required Field" });
+    }
 
-  const addCoupon = async(req,res) =>
-  {
-    try 
-    {
+    // CHECK ALREADY EXISTS
+    const couponExists = await Coupon.findOne({ code });
+    if (couponExists) {
+      return res.status(400).json({ message: "Coupon Already Exists" });
+    }
 
-        // Take required Coupon details from request
-        
-        const {code,discount,minOrderValue,validFrom,validTill,isActive} = req.body || {};
-        
-        // Extract Coupon fields from request body
-        
-        //console.log(code,discount,minOrderValue,validFrom,validTill,isActive)
-        
-        
-        // Check Validation
-        
-        if (!code || !discount || !minOrderValue || !validFrom || !validTill || !isActive) 
-        {
-            return res.status(400).json({message :"Please Fill All Required Field"})
-            
-        }
-        
-        
-        // Check if the Coupon is already exists
-        
-        
-        const couponExists = await Coupon.findOne({code,discount,minOrderValue,validFrom,validTill,
-            isActive: isActive !== undefined ? isActive : true}) // default true if not provided
-        if(couponExists)
-        {
-            return res.status(400).json({"message":"Coupon Already Exists"})
-        }
-        
-        
-        
-        // Create New Coupon
-        
-         // Create new coupon
-    const newCoupon = new Coupon({code,discount,minOrderValue,validFrom,validTill,isActive
-    })
+    // CREATE
+    const newCoupon = new Coupon({
+      code,
+      discount,
+      minOrderValue,
+      validFrom,
+      validTill,
+      isActive,
+    });
 
     await newCoupon.save();
-        
-        
-        
-        // Send response for newly created Coupon
-        
-        return res.status(201).json({message:"Coupon is Created Successfully by Admin !!",newCoupon})
-        
-        
-    }
 
-    catch (error) 
-    {
-     console.log(error)
-     res.status(500).json({ error: "Internal Server Error" })   
-               
-    }
-  
+    return res
+      .status(201)
+      .json({ message: "Coupon Created Successfully!", newCoupon });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
+};
+
 
   const getAllCoupon = async(req,res)=>
   {
@@ -232,75 +220,62 @@ const Cart = require('../models/cartModel');
         }
     }
 
-    //Apply a coupon to Cart items before payment BY USER
-    const applyCoupon = async(req,res) =>
-    {
-        try
-         {
 
-          //fetch userID fron request body
+    // APPLY COUPON BY USER
+// Apply coupon when user clicks "Apply"
+const applyCoupon = async (req, res) => {
+  try {
+    const { couponId } = req.params;
+    const userId = req.user.id;
 
-          const userId = req.user.id
+    // Fetch coupon
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) return res.status(404).json({ error: "Coupon not found" });
+    if (!coupon.isActive) return res.status(400).json({ error: "Coupon not active" });
 
-          //fetch coupon ID from request parameters
-
-          const{couponId} = req.params
-
-          // check if the coupon is available in the DB
-
-          const coupon = await Coupon.findById(couponId)
-          if(!coupon)
-          {
-            return res.status(404).json({error:"Coupon is not found"})
-          }
-
-          // check if the coupon is active or not
-          if(!coupon.isActive)
-          {
-          
-             return res.status(400).json({error:"Coupon is not Available Now"})
-
-          }
-
-          // check if the coupon validity or check if it is expired
-
-          const now = new Date()
-
-          if(now < coupon.validFrom && now > coupon.validTill)
-          {
-            return res.status(400).json({error:"Coupon is not Valid or Expired "})
-          }
-
-          // Get User's Cart
-          const cart =await Cart.findOne({userId})
-          
-          // Check if the users cart have items, then only we can apply coupons
-
-          if(!cart || cart.items.length===0)
-          {
-             return res.status(400).json({error:"Cart is Empty"})
-          }
-
-          // check if the minimum oreder value condition is satisfied or not
-
-          if(cart.totalAmount < coupon.minOrderValue)
-          {
-              return res.status(400).json({error:`Eligible only if  purchase atleast ${coupon.minOrderValue} for this Coupon`})
-          }
-
-          //Apply Discound
-
-          const totalAmountAfterDiscount = cart.totalAmount - coupon.discount
-
-          return res.status(200).json({message:"Coupon Applied !!!!",originalTotal:cart.totalAmount,discount:coupon.discount,totalAmountAfterDiscount})
-            
-        } 
-        catch (error)
-         {
-        console.log(error)
-        res.status(500).json({ error: "Internal Server Error" })   
-            
-        }
+    const now = new Date();
+    if (now < coupon.validFrom || now > coupon.validTill) {
+      return res.status(400).json({ error: "Coupon expired or not valid" });
     }
-  
+
+    // Fetch cart
+    const cart = await Cart.findOne({ userId }).populate("items.itemId");
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ error: "Cart is empty" });
+    }
+
+    // Calculate total
+    const totalAmount = cart.items.reduce((sum, item) => {
+      if (!item.itemId) return sum;
+      return sum + item.itemId.price * item.quantity;
+    }, 0);
+
+    // Check minimum order value
+    if (totalAmount < coupon.minOrderValue) {
+      return res.status(400).json({
+        error: `Eligible only if purchase at least ₹${coupon.minOrderValue} for this coupon`,
+      });
+    }
+
+    // Total after discount
+    let totalAfterDiscount = totalAmount - coupon.discount;
+    if (totalAfterDiscount < 0) totalAfterDiscount = 0;
+
+    // Send response to frontend
+    return res.status(200).json({
+      message: "Coupon applied successfully",
+      discount: coupon.discount,
+      totalAfterDiscount,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+
+
+
   module.exports ={addCoupon,getAllCoupon,getCouponDetails,updateCoupon,deleteCoupon,getAllCouponByUser,applyCoupon}

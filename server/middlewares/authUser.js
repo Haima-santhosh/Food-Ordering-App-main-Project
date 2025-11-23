@@ -1,52 +1,46 @@
 const jwt = require('jsonwebtoken')
 
-// Middleware to check if a user is logged in
-const authUser = (req,res,next)=>
-{
-    try 
-    {
-     //validate the cookies before// Check if cookies exist
-     
+// Middleware to check if user is logged in
+const authUser = (req, res, next) => {
+  try {
+
+    // just checking if cookies exist
     if (!req.cookies) {
       return res.status(401).json({ error: "No cookies found, not authorized" });
     }
 
-     // Get token from cookies
+    // getting token from cookies
+    const { token } = req.cookies;
 
-     const {token} = req.cookies
-      
-       // If no token, block access
-     if(!token)
-     {
-        return res.status(401).json({error:"User is not authorized"})
-     }
-        
-     // if user has token verify it to find any kind of tampering or issue
+    // if no token found
+    if (!token) {
+      return res.status(401).json({ error: "User is not authorized" });
+    }
 
-     const decodedToken = jwt.verify(token,process.env.JWT_SECRET_KEY)
+    // verify the token to see if it is valid or changed
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-     // Check role
-    if (decodedToken.role !== 'user') {
+    // check if the user is actually a user and not admin
+    if (decoded.role !== 'user') {
       return res.status(403).json({ error: "Admins cannot access this route" });
     }
 
-      
-     // If token invalid, block access
-     if(!decodedToken)
-     {
-        return res.status(401).json({error:"User is not authorized"}) 
-     }
-   
-      // Attach user info to request object
-     req.user = decodedToken
-
-
-   next()
-    } 
-    
-    catch (error) {
-      console.log(error);
-      return res.status(401).json({ error: "Invalid or expired token" })  
+    // if something wrong with token data
+    if (!decoded) {
+      return res.status(401).json({ error: "User is not authorized" });
     }
-}
+
+    // passing user details to next middleware
+    req.user = {
+      id: decoded.id || decoded._id,
+      role: decoded.role,
+    };
+
+    next();
+  } catch (error) {
+    console.log(error);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+
 module.exports = authUser;

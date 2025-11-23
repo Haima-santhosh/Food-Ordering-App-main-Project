@@ -45,8 +45,8 @@ reviewRouter.delete('/admin-delete-review/:reviewId', authAdmin, deleteReviewInA
 reviewRouter.post('/add-review', authUser, addReview)
 
 // Get  All ReviewS posted By the User 
-// GET http://localhost:3000/api/review
-reviewRouter.get('/my-review', authUser, getAllReview)
+// GET http://localhost:3000/api/review/my-reviews
+reviewRouter.get('/my-reviews', authUser, getAllReview)
 
 
 // Get  All Review for a Specific Restaurant in User Side

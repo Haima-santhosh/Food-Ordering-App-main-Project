@@ -2,7 +2,7 @@ const express = require('express')
 const orderRouter = express.Router()
 const authAdmin = require('../middlewares/authAdmin')
 const authUser = require('../middlewares/authUser')
-const { addOrders,getOrders,getSingleOrder,cancelOrder,getOrdersByAdmin,getSingleOrderByAdmin,updateOrderStatus} = require('../controllers/orderController')
+const { addOrders,getOrders,getSingleOrder,cancelOrder,getOrdersByAdmin,getSingleOrderByAdmin,updateOrderStatus,cancelOrderByAdmin} = require('../controllers/orderController')
 
 
 /**********************   ADMIN ROUTES ******************************/
@@ -20,6 +20,12 @@ orderRouter.get('/get-order-admin/:orderId', authAdmin, getSingleOrderByAdmin)
 orderRouter.patch('/update-order-admin/:orderId', authAdmin, updateOrderStatus)
 
 
+// Cancel order by Admin
+// DELETE http://localhost:3000/api/order/admin/cancel-order/:orderId
+orderRouter.delete('/admin/cancel-order/:orderId', authAdmin, cancelOrderByAdmin);
+
+
+
 
 /**********************   USER ROUTES ******************************/
 
@@ -28,8 +34,8 @@ orderRouter.patch('/update-order-admin/:orderId', authAdmin, updateOrderStatus)
 orderRouter.post('/add-orders', authUser, addOrders)
 
 // Get User All Orders
-// GET http://localhost:3000/api/order/all-orders
-orderRouter.get('/all-orders', authUser, getOrders)
+// GET http://localhost:3000/api/order/my-orders
+orderRouter.get('/my-orders', authUser, getOrders)
 
 // Get Single Order in User Side
 // GET http://localhost:3000/api/order/view-single-order/:orderId

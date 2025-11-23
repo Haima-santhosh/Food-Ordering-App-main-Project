@@ -8,6 +8,7 @@ const categoryRouter = require('./categoryRoutes')
 const menuRouter = require('./menuRoutes')
 const cartRouter = require('./cartRoutes')
 const couponRouter = require('./couponRoutes')
+const paymentRouter = require('./paymentRoutes')
 const orderRouter = require('./orderRoutes')
 const reviewRouter = require('./reviewRoutes')
 
@@ -41,7 +42,7 @@ router.use('/order',orderRouter)
 
 
 // http://localhost:3000/api/payment
-// router.use('/payment', require('./paymentRoutes'))
+router.use('/payment', require('./paymentRoutes'));
 
 
 
