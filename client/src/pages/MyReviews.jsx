@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api/axios"; // centralized axios instance
 
 const MyReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -11,14 +11,10 @@ const MyReviews = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_URL}/review/my-reviews`,
-          { withCredentials: true }
-        );
-
+        const { data } = await api.get("/review/my-reviews");
         setReviews(data.reviews || []);
       } catch (err) {
-        console.log(err);
+        console.error("Error fetching reviews:", err);
       }
       setLoading(false);
     };
@@ -27,14 +23,10 @@ const MyReviews = () => {
 
   const deleteReview = async (id) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/review/delete-review/${id}`,
-        { withCredentials: true }
-      );
-
-      setReviews(reviews.filter((r) => r._id !== id));
+      await api.delete(`/review/delete-review/${id}`);
+      setReviews((prev) => prev.filter((r) => r._id !== id));
     } catch (err) {
-      console.log(err);
+      console.error("Error deleting review:", err);
     }
   };
 
@@ -46,24 +38,20 @@ const MyReviews = () => {
 
   const updateReview = async () => {
     try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_URL}/review/update-review/${editId}`,
-        {
-          comment: editComment,
-          rating: parseFloat(editRating),
-        },
-        { withCredentials: true }
-      );
+      await api.patch(`/review/update-review/${editId}`, {
+        comment: editComment,
+        rating: parseFloat(editRating),
+      });
 
-      setReviews(
-        reviews.map((r) =>
+      setReviews((prev) =>
+        prev.map((r) =>
           r._id === editId ? { ...r, comment: editComment, rating: editRating } : r
         )
       );
 
       setEditId(null);
     } catch (err) {
-      console.log(err);
+      console.error("Error updating review:", err);
     }
   };
 
@@ -71,7 +59,7 @@ const MyReviews = () => {
 
   return (
     <div className="pt-24 px-4 sm:px-8 min-h-screen bg-gray-50 mb-10">
-      <h2 className="text-4xl font-bold text-center text-blue-700 dark:text-blue-300 rounded-lg shadow-md p-6 mb-10">
+      <h2 className="text-4xl font-bold text-center text-blue-700 rounded-lg shadow-md p-6 mb-10">
         My Reviews
       </h2>
 
@@ -88,9 +76,8 @@ const MyReviews = () => {
                 <img
                   src={r.itemId?.itemImage}
                   className="w-16 h-16 rounded-lg object-cover border"
-                  alt="item"
+                  alt={r.itemId?.itemName || "item"}
                 />
-
                 <div>
                   <p className="font-semibold text-lg">{r.itemId?.itemName}</p>
                   <p className="text-sm text-gray-500">Restaurant: {r.restaurant}</p>
@@ -134,7 +121,6 @@ const MyReviews = () => {
               ) : (
                 <>
                   <p className="mt-3 text-gray-700">{r.comment}</p>
-
                   <div className="mt-4 flex gap-3">
                     <button
                       onClick={() => startEdit(r)}
@@ -142,7 +128,6 @@ const MyReviews = () => {
                     >
                       Edit
                     </button>
-
                     <button
                       onClick={() => deleteReview(r._id)}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg"

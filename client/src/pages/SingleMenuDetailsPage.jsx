@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios"; // <- use your axios instance
 import CartButton from "../components/CartButton";
 
 const SingleMenuDetailsPage = () => {
@@ -17,15 +17,9 @@ const SingleMenuDetailsPage = () => {
   useEffect(() => {
     const loadMenuItem = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/menu/get-menu`,
-          { withCredentials: true }
-        );
-
+        const res = await api.get("/menu/get-menu"); // <- use api
         const item = res.data.menu.find(
-          (m) =>
-            String(m.itemId) === String(itemId) &&
-            String(m.restId) === String(restId)
+          (m) => String(m.itemId) === String(itemId) && String(m.restId) === String(restId)
         );
 
         setMenuItem(item || null);
@@ -41,15 +35,11 @@ const SingleMenuDetailsPage = () => {
   useEffect(() => {
     const loadDetails = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/menu/get-menu-details/${itemId}`,
-          { withCredentials: true }
-        );
-
+        const res = await api.get(`/menu/get-menu-details/${itemId}`); // <- use api
         setMenuItem(res.data.menu || null);
         setRestaurant(res.data.restaurant || null);
       } catch (err) {
-        console.log("Error fetching menu item:", err);
+        console.log("Error fetching menu item details:", err);
       }
     };
 
@@ -65,16 +55,12 @@ const SingleMenuDetailsPage = () => {
     }
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/review/add-review`,
-        {
-          itemId: itemId,
-          restId: restId,
-          rating: Number(rating),
-          comment: comment,
-        },
-        { withCredentials: true }
-      );
+      await api.post("/review/add-review", {
+        itemId,
+        restId,
+        rating: Number(rating),
+        comment,
+      });
 
       setRating("");
       setComment("");
@@ -111,9 +97,7 @@ const SingleMenuDetailsPage = () => {
 
           <div className="md:w-1/2 text-center md:text-left space-y-4">
             <h3 className="text-2xl font-semibold">{menuItem.itemName}</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              {menuItem.itemDescription}
-            </p>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">{menuItem.itemDescription}</p>
 
             {menuItem.category && (
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -123,20 +107,16 @@ const SingleMenuDetailsPage = () => {
 
             {restaurant && (
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                🍽️ Cuisine:{" "}
-                <span className="font-medium">{restaurant.cuisineType}</span>
+                🍽️ Cuisine: <span className="font-medium">{restaurant.cuisineType}</span>
               </p>
             )}
 
             <p className="text-xl text-green-600 font-bold">₹{menuItem.price}</p>
 
-            <p className="text-yellow-500 font-medium">
-              ⭐ {menuItem.rating} / 5
-            </p>
+            <p className="text-yellow-500 font-medium">⭐ {menuItem.rating} / 5</p>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center md:justify-start">
               <CartButton item={menuItem} />
-
               <button
                 onClick={() => navigate(-1)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all"
@@ -156,7 +136,6 @@ const SingleMenuDetailsPage = () => {
               <span className="text-md mb-2 font-medium text-gray-700 dark:text-gray-300">
                 Rating
               </span>
-
               <input
                 type="number"
                 step="0.1"
@@ -173,7 +152,6 @@ const SingleMenuDetailsPage = () => {
               <span className="text-md mb-2 font-medium text-gray-700 dark:text-gray-300">
                 Your Review
               </span>
-
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}

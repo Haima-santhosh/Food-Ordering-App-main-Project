@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios"; // <- use your configured axios instance
 import Pagination from "../components/Pagination";
-
-// Allow cookies to send automatically
-axios.defaults.withCredentials = true;
 
 const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -29,15 +26,10 @@ const Restaurants = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/restaurants/view-restaurants`
-        );
-
+        const response = await api.get("/restaurants/view-restaurants"); // <- api instance
         setRestaurants(response.data.restaurants || []);
       } catch (err) {
-        setError(
-          err.response?.data?.message || "Failed to fetch restaurants."
-        );
+        setError(err.response?.data?.message || "Failed to fetch restaurants.");
       } finally {
         setLoading(false);
       }
@@ -58,11 +50,8 @@ const Restaurants = () => {
     return matchesSearch && matchesCuisine;
   });
 
-  if (loading)
-    return <p className="text-center mt-20">Loading restaurants...</p>;
-
-  if (error)
-    return <p className="text-center mt-20 text-red-500">{error}</p>;
+  if (loading) return <p className="text-center mt-20">Loading restaurants...</p>;
+  if (error) return <p className="text-center mt-20 text-red-500">{error}</p>;
 
   return (
     <>
@@ -97,9 +86,7 @@ const Restaurants = () => {
 
           {/* Restaurant Cards */}
           {filteredRestaurants.length === 0 ? (
-            <p className="text-center text-gray-500 italic">
-              No restaurants found.
-            </p>
+            <p className="text-center text-gray-500 italic">No restaurants found.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
               {filteredRestaurants.map((rest) => (
@@ -115,9 +102,7 @@ const Restaurants = () => {
 
                   <div className="p-6 text-center">
                     <h2 className="text-xl font-semibold">{rest.restName}</h2>
-                    <p className="text-blue-600 dark:text-blue-400">
-                      {rest.cuisineType}
-                    </p>
+                    <p className="text-blue-600 dark:text-blue-400">{rest.cuisineType}</p>
                     <p className="italic text-gray-500">📍 {rest.address}</p>
                     <p>💰 Avg Price: ₹{rest.averagePrice}</p>
 
@@ -130,9 +115,7 @@ const Restaurants = () => {
 
                     <button
                       className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg"
-                      onClick={() =>
-                        navigate(`/restaurants/${rest._id}/menu`)
-                      }
+                      onClick={() => navigate(`/restaurants/${rest._id}/menu`)}
                     >
                       View Menu
                     </button>

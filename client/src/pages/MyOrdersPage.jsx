@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios"; // use the shared axios instance
 
 const MyOrdersPage = () => {
   const navigate = useNavigate();
@@ -10,11 +10,7 @@ const MyOrdersPage = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/order/my-orders`,
-          { withCredentials: true }
-        );
-
+        const res = await api.get("/order/my-orders");
         setOrders(res.data.order || []);
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -27,10 +23,7 @@ const MyOrdersPage = () => {
 
   const cancelOrder = async (orderId) => {
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/order/cancel-order/${orderId}`,
-        { withCredentials: true }
-      );
+      await api.delete(`/order/cancel-order/${orderId}`);
 
       setOrders((prev) =>
         prev.map((order) =>
@@ -67,8 +60,8 @@ const MyOrdersPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen px-6 pt-20 pb-10">
-      <h2 className="text-4xl font-bold text-center text-blue-700 dark:text-blue-300 rounded-lg shadow-md p-6 mb-10">
+    <div className="bg-gray-50 min-h-screen px-6 pt-20 pb-10">
+      <h2 className="text-4xl font-bold text-center text-blue-700 mb-10">
         My Orders
       </h2>
 

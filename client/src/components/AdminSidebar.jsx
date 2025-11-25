@@ -26,7 +26,7 @@ const AdminSidebar = ({ open, closeSidebar }) => {
   return (
     <>
     
-      <aside className="hidden md:block fixed md:relative top-0 left-0 h-full w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-gray-700 pt-24 p-4 shadow-sm min-h-screen">
+      <aside className="hidden md:block fixed md:relative top-0 left-0 h-full w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-gray-700 pt-24 p-4 shadow-sm ">
         <nav className="flex flex-col gap-2">
           {navLinkData.map((item, idx) => (
             <NavLink

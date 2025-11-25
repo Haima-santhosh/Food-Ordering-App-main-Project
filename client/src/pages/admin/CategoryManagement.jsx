@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
-  const [editingId, setEditingId] = useState(null); // FIXED typo
-
-  // UPDATED API URL FROM ENV
-  const API_URL = `${import.meta.env.VITE_API_URL}/category`;
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Load all categories
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_URL}/all-categories`, {
-        withCredentials: true,
-      });
+      const res = await api.get("/category/all-categories");
       setCategories(res.data.categories || []);
     } catch (err) {
       console.error("Failed to load categories", err);
@@ -30,19 +26,12 @@ const CategoryManagement = () => {
     e.preventDefault();
     if (!name.trim()) return;
 
+    setLoading(true);
     try {
       if (editingId) {
-        await axios.put(
-          `${API_URL}/update-category/${editingId}`,
-          { categoryName: name },
-          { withCredentials: true }
-        );
+        await api.put(`/category/update-category/${editingId}`, { categoryName: name });
       } else {
-        await axios.post(
-          `${API_URL}/add-category`,
-          { categoryName: name },
-          { withCredentials: true }
-        );
+        await api.post("/category/add-category", { categoryName: name });
       }
       setName("");
       setEditingId(null);
@@ -50,6 +39,8 @@ const CategoryManagement = () => {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,17 +50,21 @@ const CategoryManagement = () => {
     setName(cat.categoryName);
   };
 
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingId(null);
+    setName("");
+  };
+
   // Delete category
   const deleteCategory = async (id) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
-
     try {
-      await axios.delete(`${API_URL}/delete-category/${id}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/category/delete-category/${id}`);
       fetchCategories();
     } catch (err) {
       console.error(err);
+      alert("Failed to delete category");
     }
   };
 
@@ -89,12 +84,24 @@ const CategoryManagement = () => {
           className="border w-full p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
           required
         />
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          {editingId ? "Update Category" : "Add Category"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            {loading ? "Saving..." : editingId ? "Update Category" : "Add Category"}
+          </button>
+          {editingId && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="flex-1 bg-gray-400 text-white py-2 rounded hover:bg-gray-500 transition"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
       <div className="max-w-3xl mx-auto bg-white rounded shadow-md overflow-x-auto">
@@ -121,7 +128,7 @@ const CategoryManagement = () => {
                   <td className="p-3 border-b text-center space-x-2">
                     <button
                       onClick={() => editCategory(cat)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mb-3"
                     >
                       Edit
                     </button>

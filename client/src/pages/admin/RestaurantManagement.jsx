@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 
 const RestaurantManagement = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -10,25 +10,18 @@ const RestaurantManagement = () => {
     cuisineType: "",
     averagePrice: "",
     address: "",
-    image: undefined,
+    image: null,
   });
-
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ---------------------------
-  // Load restaurant list
-  // ---------------------------
+  // Load all restaurants
   const loadRestaurants = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/restaurants/view-restaurants`,
-        { withCredentials: true }
-      );
-
-      setRestaurants(response.data.restaurants || []);
+      const res = await api.get("/restaurants/all-restaurants");
+      setRestaurants(res.data.restaurants || []);
     } catch (err) {
-      console.log("Unable to load restaurants", err);
+      console.error("Failed to load restaurants", err);
     }
   };
 
@@ -36,58 +29,29 @@ const RestaurantManagement = () => {
     loadRestaurants();
   }, []);
 
-  // ---------------------------
-  // Input handler
-  // ---------------------------
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
-    if (name === "image") {
-      setFormData({ ...formData, image: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    if (name === "image") setFormData({ ...formData, image: files[0] });
+    else setFormData({ ...formData, [name]: value });
   };
 
-  // ---------------------------
-  // Add or update restaurant
-  // ---------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const sendData = new FormData();
-      sendData.append("restName", formData.restName);
-      sendData.append("rating", formData.rating || 0);
-      sendData.append("deliveryTime", formData.deliveryTime);
-      sendData.append("cuisineType", formData.cuisineType);
-      sendData.append("averagePrice", formData.averagePrice);
-      sendData.append("address", formData.address);
-
-      if (formData.image) {
-        sendData.append("image", formData.image);
-      }
+      const data = new FormData();
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== null) data.append(key, formData[key]);
+      });
 
       if (editingId) {
-        // UPDATE RESTAURANT
-        await axios.patch(
-          `${import.meta.env.VITE_API_URL}/restaurants/update-restaurant/${editingId}`,
-          sendData,
-          { withCredentials: true }
-        );
+        await api.patch(`/restaurants/update-restaurant/${editingId}`, data);
       } else {
-        // ADD RESTAURANT
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/restaurants/add-restaurants`,
-          sendData,
-          { withCredentials: true }
-        );
+        await api.post("/restaurants/add-restaurants", data);
       }
 
       await loadRestaurants();
 
-      // Reset form
       setFormData({
         restName: "",
         rating: "",
@@ -95,66 +59,52 @@ const RestaurantManagement = () => {
         cuisineType: "",
         averagePrice: "",
         address: "",
-        image: undefined,
+        image: null,
       });
       setEditingId(null);
     } catch (err) {
-      console.log("Saving failed", err);
+      console.error("Save failed", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------------------------
-  // Set data for editing
-  // ---------------------------
-  const handleEdit = (item) => {
-    setEditingId(item._id);
+  const handleEdit = (restaurant) => {
+    setEditingId(restaurant._id);
     setFormData({
-      restName: item.restName,
-      rating: item.rating,
-      deliveryTime: item.deliveryTime,
-      cuisineType: item.cuisineType,
-      averagePrice: item.averagePrice,
-      address: item.address,
-      image: undefined,
+      restName: restaurant.restName,
+      rating: restaurant.rating,
+      deliveryTime: restaurant.deliveryTime,
+      cuisineType: restaurant.cuisineType,
+      averagePrice: restaurant.averagePrice,
+      address: restaurant.address,
+      image: null,
     });
   };
 
-  // ---------------------------
-  // Delete a restaurant
-  // ---------------------------
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this restaurant?")) {
-      return;
-    }
-
+    if (!window.confirm("Are you sure you want to delete this restaurant?")) return;
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/restaurants/delete-restaurant/${id}`,
-        { withCredentials: true }
-      );
-
-      setRestaurants((prev) => prev.filter((item) => item._id !== id));
+      await api.delete(`/restaurants/delete-restaurant/${id}`);
+      setRestaurants((prev) => prev.filter((r) => r._id !== id));
     } catch (err) {
-      console.log("Delete failed", err);
+      console.error("Delete failed", err);
     }
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-6 pt-28 bg-gray-50 min-h-screen">
       <h2 className="text-2xl font-semibold mb-6 text-center">Restaurant Management</h2>
 
-      {/* -------------------- FORM -------------------- */}
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 shadow-md rounded-lg max-w-3xl mx-auto mb-10"
+        className="bg-white p-4 md:p-6 shadow-md rounded-lg max-w-4xl mx-auto mb-10"
       >
         <h3 className="text-lg font-semibold mb-4">
           {editingId ? "Edit Restaurant" : "Add New Restaurant"}
         </h3>
-
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <input
             type="text"
             name="restName"
@@ -162,18 +112,16 @@ const RestaurantManagement = () => {
             value={formData.restName}
             onChange={handleChange}
             required
-            className="border p-2 rounded"
+            className="border p-2 rounded w-full"
           />
-
           <input
             type="number"
             name="rating"
             placeholder="Rating"
             value={formData.rating}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="border p-2 rounded w-full"
           />
-
           <input
             type="number"
             name="deliveryTime"
@@ -181,15 +129,14 @@ const RestaurantManagement = () => {
             value={formData.deliveryTime}
             onChange={handleChange}
             required
-            className="border p-2 rounded"
+            className="border p-2 rounded w-full"
           />
-
           <select
             name="cuisineType"
             value={formData.cuisineType}
             onChange={handleChange}
             required
-            className="border p-2 rounded"
+            className="border p-2 rounded w-full"
           >
             <option value="">Select Cuisine</option>
             <option>Indian</option>
@@ -201,7 +148,6 @@ const RestaurantManagement = () => {
             <option>Mediterranean</option>
             <option>American</option>
           </select>
-
           <input
             type="number"
             name="averagePrice"
@@ -209,39 +155,36 @@ const RestaurantManagement = () => {
             value={formData.averagePrice}
             onChange={handleChange}
             required
-            className="border p-2 rounded"
+            className="border p-2 rounded w-full"
           />
-
           <input
             type="text"
             name="address"
             placeholder="Address"
             value={formData.address}
             onChange={handleChange}
-            className="border p-2 rounded"
+            className="border p-2 rounded w-full"
           />
-
           <input
             type="file"
             name="image"
             onChange={handleChange}
-            className="border p-2 rounded col-span-2"
             accept="image/*"
+            className="border p-2 rounded w-full col-span-1 sm:col-span-2"
           />
         </div>
-
         <button
           type="submit"
           disabled={loading}
-          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded"
+          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded w-full md:w-auto"
         >
           {loading ? "Saving..." : editingId ? "Update" : "Add"}
         </button>
       </form>
 
-      {/* -------------------- TABLE -------------------- */}
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-x-auto">
-        <table className="w-full border-collapse">
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow-md">
+        <table className="min-w-full border-collapse">
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3 border-b">Image</th>
@@ -254,7 +197,6 @@ const RestaurantManagement = () => {
               <th className="p-3 border-b text-center">Actions</th>
             </tr>
           </thead>
-
           <tbody>
             {restaurants.length === 0 ? (
               <tr>
@@ -267,7 +209,7 @@ const RestaurantManagement = () => {
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="p-3 border-b">
                     <img
-                      src={item.image}
+                      src={item.image || "/placeholder.png"}
                       alt={item.restName}
                       className="w-16 h-16 rounded object-cover"
                     />
@@ -278,16 +220,16 @@ const RestaurantManagement = () => {
                   <td className="p-3 border-b">{item.deliveryTime} min</td>
                   <td className="p-3 border-b">₹{item.averagePrice}</td>
                   <td className="p-3 border-b">{item.address}</td>
-                  <td className="p-3 border-b text-center">
+                  <td className="p-3 border-b text-center space-x-2 flex flex-col sm:flex-row items-center justify-center gap-2">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded mr-2 mb-3"
+                      className="px-3 py-1 bg-blue-500 text-white rounded w-full sm:w-auto"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(item._id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded"
+                      className="px-3 py-1 bg-red-500 text-white rounded w-full sm:w-auto"
                     >
                       Delete
                     </button>
@@ -297,6 +239,55 @@ const RestaurantManagement = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {restaurants.length === 0 && (
+          <p className="text-center py-6 text-gray-500">No restaurants found</p>
+        )}
+        {restaurants.map((item) => (
+          <div
+            key={item._id}
+            className="bg-white p-4 rounded-lg shadow flex flex-col space-y-2"
+          >
+            <img
+              src={item.image || "/placeholder.png"}
+              alt={item.restName}
+              className="w-full h-40 object-cover rounded"
+            />
+            <p className="font-semibold text-lg">{item.restName}</p>
+            <p>
+              <span className="font-semibold">Cuisine:</span> {item.cuisineType}
+            </p>
+            <p>
+              <span className="font-semibold">Rating:</span> {item.rating}
+            </p>
+            <p>
+              <span className="font-semibold">Delivery:</span> {item.deliveryTime} min
+            </p>
+            <p>
+              <span className="font-semibold">Price:</span> ₹{item.averagePrice}
+            </p>
+            <p>
+              <span className="font-semibold">Address:</span> {item.address}
+            </p>
+            <div className="flex space-x-2 mt-2">
+              <button
+                onClick={() => handleEdit(item)}
+                className="px-3 py-1 bg-blue-500 text-white rounded flex-1"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(item._id)}
+                className="px-3 py-1 bg-red-500 text-white rounded flex-1"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

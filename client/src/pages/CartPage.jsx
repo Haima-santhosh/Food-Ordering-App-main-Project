@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addItem, removeItem, clearCart, decreaseQuantity } from "../redux/store";
-import axios from "axios";
+import api from "../api/axios"; // <- Use your axios instance
 
 const CartPage = () => {
   const cartItems = useSelector((state) => state.cart);
@@ -16,13 +16,12 @@ const CartPage = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [total, setTotal] = useState(0);
 
-  // Subtotal calculation
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * (item.quantity || 1),
     0
   );
 
-  // Update discount and total whenever coupon or cart changes
+  // Update discount and total
   useEffect(() => {
     if (coupon) {
       const discount = coupon.discountType === "percent"
@@ -36,14 +35,18 @@ const CartPage = () => {
     }
   }, [coupon, subtotal]);
 
-  // Fetch available coupons on page load
+  // Fetch available coupons
   useEffect(() => {
-  axios
-    .get(`${import.meta.env.VITE_API_URL}/coupons/get-coupons`, { withCredentials: true })
-    .then((res) => setCoupons(res.data.coupons || []))
-    .catch((err) => console.error("Failed to fetch coupons:", err));
-}, []);
-
+    const fetchCoupons = async () => {
+      try {
+        const res = await api.get("/coupons/get-coupons"); // <- use api
+        setCoupons(res.data.coupons || []);
+      } catch (err) {
+        console.error("Failed to fetch coupons:", err);
+      }
+    };
+    fetchCoupons();
+  }, []);
 
   // Apply coupon
   const applyCoupon = (c) => {
@@ -57,50 +60,33 @@ const CartPage = () => {
   };
 
   // Checkout
-const handleCheckout = async () => {
-  if (!address.trim()) {
-    alert("Enter delivery address");
-    return;
-  }
+  const handleCheckout = async () => {
+    if (!address.trim()) return alert("Enter delivery address");
+    if (!cartItems.length) return alert("Cart is empty");
 
-  if (!cartItems.length) {
-    alert("Cart is empty");
-    return;
-  }
+    try {
+      const res = await api.post("/payment/create-checkout-session", {
+        cart: cartItems.map((item) => ({
+          itemId: item.itemId || item._id,
+          itemName: item.itemName,
+          price: item.price,
+          image: item.itemImage,
+          quantity: item.quantity,
+          restId: item.restId,
+        })),
+        address,
+        coupon,
+        total,
+        restId: cartItems[0].restId,
+      });
 
-  console.log("Cart before checkout:", cartItems);
+      window.location.href = res.data.url;
+    } catch (err) {
+      console.error("Checkout failed:", err);
+      alert(err?.response?.data?.message || "Checkout failed, try again.");
+    }
+  };
 
-  try {
-  const res = await axios.post(
-  `${import.meta.env.VITE_API_URL}/payment/create-checkout-session`,
-  {
-    cart: cartItems.map((item) => ({
-      itemId: item.itemId || item._id,
-      itemName: item.itemName,
-      price: item.price,
-      image: item.itemImage,
-      quantity: item.quantity,
-      restId: item.restId,
-    })),
-    address,
-    coupon,
-    total,
-    restId: cartItems[0].restId,
-  },
-  { withCredentials: true }
-);
-
-
-
-    window.location.href = res.data.url;
-  } catch (err) {
-    console.error("Checkout failed:", err);
-    alert(err?.response?.data?.message || "Checkout failed, try again.");
-  }
-};
-
-    
- 
   if (!cartItems.length) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen pt-28 bg-gray-100 dark:bg-slate-900 text-gray-800 dark:text-gray-200">

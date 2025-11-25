@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios"; // <- use your configured axios instance
 import Pagination from "../components/Pagination";
 import CartButton from "../components/CartButton";
 
@@ -18,19 +18,13 @@ const MenuPage = () => {
   useEffect(() => {
     const loadRestaurant = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/restaurants/view-restaurants`,
-          { withCredentials: true }
-        );
-
-        const found = res.data.restaurants.find((r) => r._id == restId);
-
+        const res = await api.get("/restaurants/view-restaurants"); // <- use api
+        const found = res.data.restaurants.find((r) => r._id === restId);
         setRestaurant(found || null);
       } catch (err) {
         console.log("Restaurant fetch error:", err);
       }
     };
-
     loadRestaurant();
   }, [restId]);
 
@@ -38,27 +32,19 @@ const MenuPage = () => {
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/menu/get-menu`,
-          { withCredentials: true }
-        );
-
-        const list = res.data.menu.filter((item) => item.restId == restId);
-
+        const res = await api.get("/menu/get-menu"); // <- use api
+        const list = res.data.menu.filter((item) => item.restId === restId);
         setMenu(list);
       } catch (err) {
         console.log("Menu fetch error:", err);
       }
     };
-
     loadMenu();
   }, [restId]);
 
   // Filter + Sort
   const filteredMenu = menu
-    .filter((item) =>
-      item.itemName.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((item) => item.itemName.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       if (sort === "price") return a.price - b.price;
       if (sort === "rating") return b.rating - a.rating;
@@ -70,8 +56,7 @@ const MenuPage = () => {
       <div className="bg-gray-50 dark:bg-gray-900 min-h-screen px-6 pt-20 pb-10 mt-10">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold text-center text-blue-700 dark:text-blue-300 rounded-lg shadow-md p-6 mb-10">
-            Enjoy Your Favourite Dishes From{" "}
-            {restaurant ? restaurant.restName : "Restaurant"}
+            Enjoy Your Favourite Dishes From {restaurant ? restaurant.restName : "Restaurant"}
           </h1>
 
           {/* Search + Back + Sort */}
@@ -141,10 +126,7 @@ const MenuPage = () => {
                     </p>
 
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-green-600 font-bold text-md">
-                        ₹{item.price}
-                      </span>
-
+                      <span className="text-green-600 font-bold text-md">₹{item.price}</span>
                       <span className="text-black px-2 py-1 rounded-md text-sm font-semibold">
                         ⭐ {item.rating}
                       </span>
@@ -154,9 +136,7 @@ const MenuPage = () => {
                       <CartButton item={item} />
 
                       <button
-                        onClick={() =>
-                          navigate(`/restaurants/${restId}/menu/${item._id}`)
-                        }
+                        onClick={() => navigate(`/restaurants/${restId}/menu/${item._id}`)}
                         className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg 
                         hover:bg-blue-700 transition-all"
                       >

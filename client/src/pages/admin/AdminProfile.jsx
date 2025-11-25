@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
+ import api from "../../api/axios";
 
 const AdminProfile = () => {
   const [admin, setAdmin] = useState(null);
@@ -12,16 +13,12 @@ const AdminProfile = () => {
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/admin/admin-profile`,
-          { withCredentials: true }
-        );
-
+        const res = await api.get("/admin/admin-profile");
         setAdmin(res.data.admin);
         setUpdatedAdmin(res.data.admin);
       } catch (err) {
         alert("Failed to load profile");
-        console.log(err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -48,18 +45,15 @@ const AdminProfile = () => {
       formData.append("email", updatedAdmin.email);
       if (profileFile) formData.append("profilePic", profileFile);
 
-      const res = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/admin/update-admin`,
-        formData,
-        { withCredentials: true }
-      );
+      const res = await api.patch("/admin/update-admin", formData);
 
       setAdmin(res.data.admin);
       setUpdatedAdmin(res.data.admin);
       setProfileFile(null);
       setEditMode(false);
       alert("Profile updated!");
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Failed to update profile");
     }
   };

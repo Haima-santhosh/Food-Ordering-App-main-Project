@@ -1,4 +1,3 @@
-// app.js
 const express = require('express');
 const app = express();
 require('dotenv').config();
@@ -8,71 +7,33 @@ const session = require('express-session');
 const connectDB = require('./config/db');
 const router = require('./routes/');
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
-// -------- MIDDLEWARES --------
-
-// Parse cookies
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// CORS setup
-const allowedOrigins = [
-  "http://localhost:5173", // dev frontend
-  "https://grabbite-food-ordering-app.vercel.app", // production frontend
-];
-
+// CORS for local frontend
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `The CORS policy does not allow access from: ${origin}`;
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true, // allow cookies
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Cookies",
-    "X-Requested-With",
-    "Accept"
-  ],
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  origin: ["http://localhost:5173"], // Vite dev server
+  credentials: true
 }));
 
-// Parse JSON
-app.use(express.json());
-
-// Parse URL-encoded form data
-app.use(express.urlencoded({ extended: true }));
-
-// Session setup (for auth)
+// Session for auth
 app.use(session({
-  name: 'grabbite_sid',
   secret: process.env.SESSION_SECRET || 'secretkey',
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPS required in prod
-    httpOnly: true,
-    sameSite: 'none', // cross-site cookie (Vercel frontend → Render backend)
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-  }
+  cookie: { secure: false, httpOnly: true, sameSite: 'lax' }
 }));
 
-// -------- ROUTES --------
+// Routes
 app.use('/api', router);
 
 // Test route
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+app.get('/', (req, res) => res.send('Backend working!'));
 
-// -------- DATABASE --------
+// Connect DB & start server
 connectDB();
-
-// -------- SERVER --------
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`Server running on http://localhost:${port}`));

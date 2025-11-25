@@ -1,96 +1,82 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
+import { CheckCircleIcon } from "@heroicons/react/24/solid"; // optional icon for success
 
 const PaymentSuccessPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [order, setOrder] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const [message, setMessage] = useState("Verifying payment...");
-  const [order, setOrder] = useState(null);
+
+  const query = new URLSearchParams(location.search);
+  const sessionId = query.get("session_id");
 
   useEffect(() => {
     const verifyPayment = async () => {
-      const params = new URLSearchParams(location.search);
-      const sessionId = params.get("session_id");
-
-      if (!sessionId) {
-        setMessage("No session ID found.");
-        return;
-      }
+      if (!sessionId) return navigate("/cart");
 
       try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/payment/verify-checkout-session`,
-          { sessionId },
-          { withCredentials: true }
-        );
-
-        if (res.data.message === "Payment successful") {
-          setOrder(res.data.order || null);
-          setMessage("Payment successful! 🎉");
-        } else {
-          setMessage("Payment not completed. Please try again.");
-        }
-      } catch (error) {
-        console.error(error);
-        setMessage("Failed to verify payment. Contact support.");
+        const res = await api.post("/payment/verify-checkout-session", { sessionId });
+        setOrder(res.data.order);
+      } catch (err) {
+        console.error("Payment verification failed", err);
+        alert(err?.response?.data?.message || "Payment verification failed");
+      } finally {
+        setLoading(false);
       }
     };
 
     verifyPayment();
-  }, [location.search]);
+  }, [sessionId, navigate]);
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-slate-900">
+        <p className="text-lg text-gray-700 dark:text-gray-300">Verifying your payment...</p>
+      </div>
+    );
+
+  if (!order)
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-slate-900">
+        <p className="text-lg text-red-600">No order found. Please try again.</p>
+      </div>
+    );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
-        {message}
-      </h1>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-slate-900 px-4">
+      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-xl p-8 max-w-md w-full text-center">
+        <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">
+          Payment Successful!
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          Your order has been placed successfully.
+        </p>
 
-      {order && (
-        <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            Order Details
-          </h2>
-
-          <div className="space-y-2 text-gray-600">
-            <p>
-              <strong>Order ID:</strong> {order.orderId}
-            </p>
-            <p>
-              <strong>Total Amount:</strong> ₹{order.totalAmount}
-            </p>
-            <p>
-              <strong>Payment Status:</strong> {order.paymentStatus}
-            </p>
-
-            {order.couponName && (
-              <p>
-                <strong>Coupon Applied:</strong> {order.couponName}
-              </p>
-            )}
-
-            <p>
-              <strong>Delivery Address:</strong> {order.address}
-            </p>
-          </div>
-
-          <div className="flex justify-between mt-6">
-            <button
-              onClick={() => navigate("/")}
-              className="flex-1 mr-2 py-2 px-4 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
-            >
-              Back to Home
-            </button>
-
-            <button
-              onClick={() => navigate("/my-orders")}
-              className="flex-1 ml-2 py-2 px-4 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition"
-            >
-              View My Orders
-            </button>
-          </div>
+        <div className="text-left space-y-2 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg mb-6">
+          <p>
+            <span className="font-semibold">Order ID:</span> {order.orderId}
+          </p>
+          <p>
+            <span className="font-semibold">Total:</span> ₹{order.totalAmount}
+          </p>
+          <p>
+            <span className="font-semibold">Delivery Address:</span> {order.address}
+          </p>
+          <p>
+            <span className="font-semibold">Coupon Applied:</span> {order.couponName || "None"}
+          </p>
         </div>
-      )}
+
+        <button
+          onClick={() => navigate("/restaurants")}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition"
+        >
+          Continue Shopping
+        </button>
+      </div>
     </div>
   );
 };

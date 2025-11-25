@@ -3,7 +3,7 @@ import { UserContext } from "../context/UserContext";
 import axios from "axios";
 
 const UserProfilePage = () => {
-  const { user, signin } = useContext(UserContext);
+  const { user, signin } = useContext(UserContext); // use signin instead of setUser
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -15,15 +15,14 @@ const UserProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState(null);
 
-  // Fetch profile
+  // Fetch profile from backend
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const { data } = await axios.get(
-          `${import.meta.env.VITE_API_URL}/user/user-profile`,
+          "http://localhost:3000/api/user/user-profile",
           { withCredentials: true }
         );
-
         const u = data.user;
         setProfile({
           name: u.name || "",
@@ -32,7 +31,6 @@ const UserProfilePage = () => {
           profilePic: u.profilePic || "",
           address: u.address || "",
         });
-
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -76,16 +74,15 @@ const UserProfilePage = () => {
       if (file) formData.append("profilePic", file);
 
       const { data } = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/user/update-user`,
+        "http://localhost:3000/api/user/update-user",
         formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } }
       );
 
+      // Use signin instead of setUser to update context + localStorage
       signin(data.user);
-      setProfile(data.user);
+
+      setProfile(data.user); // update local state
       setEditMode(false);
       alert("Profile updated successfully!");
     } catch (err) {
