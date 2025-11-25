@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
-import axios from "axios";
+import api from "../api/axios";
 
 const SignInPage = () => {
   const { signin } = useContext(UserContext);
@@ -22,23 +22,19 @@ const SignInPage = () => {
       setError("All fields are required");
       return;
     }
+
     setError("");
 
     try {
-   const response = await axios.post(
-  `${import.meta.env.VITE_API_URL}/api/user/user-signin`,
-  { email, password },
-  { withCredentials: true }
-);
-
-
+      // Use api.js instance, no need to prepend baseURL
+      const response = await api.post("/user/user-signin", { email, password });
 
       const user = response.data.userObject;
 
       // Update User Context
       signin(user);
 
-      // Navigate to Homepage
+      // Navigate to homepage
       navigate("/", { replace: true });
     } catch (err) {
       console.error(err);
