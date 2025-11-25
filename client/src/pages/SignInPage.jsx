@@ -25,9 +25,9 @@ const SignInPage = () => {
     setError("");
 
     try {
-      // Backend request
+      // Backend request with /api added
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/user-signin`,
+        `${import.meta.env.VITE_API_URL}/api/user-signin`,
         { email, password },
         { withCredentials: true }
       );
