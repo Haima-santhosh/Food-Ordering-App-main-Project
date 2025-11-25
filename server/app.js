@@ -16,9 +16,10 @@ app.use(cookieParser());
 
 // CORS for local frontend
 const allowedOrigins = [
-  "http://localhost:5173", 
-  "https://your-vercel-frontend.vercel.app"
+  "http://localhost:5173",
+  "https://grabbite-food-ordering-app.vercel.app"
 ];
+
 
 app.use(cors({
   origin: function(origin, callback) {
