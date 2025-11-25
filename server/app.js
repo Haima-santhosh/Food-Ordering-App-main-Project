@@ -16,8 +16,11 @@ app.use(cookieParser())
 // -------- CORS FIX --------
 app.use(
   cors({
-    origin: "http://localhost:5173",    // your frontend
-    credentials: true,                  // allow cookies
+    origin: [
+      "http://localhost:5173",
+      "https://grabbite-food-ordering-app.vercel.app"
+    ],
+    credentials: true,
     allowedHeaders: [
       "Content-Type",
       "Authorization",
