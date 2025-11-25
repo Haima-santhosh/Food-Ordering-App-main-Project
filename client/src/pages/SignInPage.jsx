@@ -6,8 +6,8 @@ import axios from "axios";
 const SignInPage = () => {
   const { signin } = useContext(UserContext);
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const navigate = useNavigate();
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,7 +25,6 @@ const SignInPage = () => {
     setError("");
 
     try {
-      // Backend request with /api added
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/user-signin`,
         { email, password },
@@ -39,7 +38,6 @@ const SignInPage = () => {
 
       // Navigate to Homepage
       navigate("/", { replace: true });
-
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || "Sign in failed. Please try again.");
