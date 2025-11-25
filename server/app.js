@@ -15,10 +15,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // CORS for local frontend
+const allowedOrigins = [
+  "http://localhost:5173", 
+  "https://your-vercel-frontend.vercel.app"
+];
+
 app.use(cors({
-  origin: ["http://localhost:5173"], // Vite dev server
-  credentials: true
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 }));
+
 
 // Session for auth
 app.use(session({
