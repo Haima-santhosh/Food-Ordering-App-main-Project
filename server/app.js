@@ -3,51 +3,28 @@ const app = express();
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const session = require('express-session');
 const connectDB = require('./config/db');
 const router = require('./routes/');
 
 const port = process.env.PORT || 3000;
 
+// -------------------------
 // Middlewares
+// -------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // -------------------------
-// CORS: allow Vercel + localhost
+// CORS: Render frontend + local dev
 // -------------------------
-const allowedOrigins = [
-  process.env.CLIENT_URL,      // Vercel frontend
-  "http://localhost:5173"      // local dev
-];
-
+// Make sure CLIENT_URL = https://your-frontend.onrender.com
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: process.env.CLIENT_URL,
   credentials: true,
 }));
 
-// -------------------------
-// Session for auth
-// -------------------------
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'secretkey',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === "production", // HTTPS only on prod
-    httpOnly: true, 
-    sameSite: 'lax'
-  }
-}));
 
-// -------------------------
 // Routes
 // -------------------------
 app.use('/api', router);

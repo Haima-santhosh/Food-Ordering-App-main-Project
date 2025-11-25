@@ -306,7 +306,7 @@ const logout = async(req,res) =>
         {
             httpOnly : true ,
             secure : process.env.NODE_ENV ==='PRODUCTION' ,
-            sameSite : 'Strict'
+            sameSite : 'none'
         }
        )
        res.status(200).json({message:"Admin Logged Out Successfully"})

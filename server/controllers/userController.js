@@ -163,7 +163,7 @@ const token = generateToken(userExists._id, 'user');
       httpOnly: true, 
        // change to true in production for https
       secure: process.env.NODE_ENV==='PRODUCTION',
-      sameSite: 'Strict',
+      sameSite: 'none',
       maxAge : 60 * 60 * 1000 // 1 hr in milliseconds
     });
 
