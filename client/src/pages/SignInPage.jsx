@@ -25,11 +25,12 @@ const SignInPage = () => {
     setError("");
 
     try {
-     const response = await axios.post(
-  `${import.meta.env.VITE_API_URL}/api/user-signin`,
+   const response = await axios.post(
+  `${import.meta.env.VITE_API_URL}/api/user/user-signin`,
   { email, password },
   { withCredentials: true }
 );
+
 
 
       const user = response.data.userObject;
