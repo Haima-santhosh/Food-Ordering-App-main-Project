@@ -1,123 +1,152 @@
-import React, { useState } from "react";
-import { FaUserEdit } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const AdminProfile = () => {
-  const [admin, setAdmin] = useState({
-    name: "Samuel Johnson",
-    email: "sam.admin@grabbite.com",
-    role: "admin",
-    profilePic: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-  });
-
+  const [admin, setAdmin] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  const [updatedAdmin, setUpdatedAdmin] = useState(admin);
+  const [updatedAdmin, setUpdatedAdmin] = useState({});
+  const [profileFile, setProfileFile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch admin profile
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/admin/admin-profile`,
+          { withCredentials: true }
+        );
+
+        setAdmin(res.data.admin);
+        setUpdatedAdmin(res.data.admin);
+      } catch (err) {
+        alert("Failed to load profile");
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAdmin();
+  }, []);
+
+  if (loading) return <p className="text-center py-6">Loading...</p>;
+  if (!admin) return <p className="text-center py-6">No admin data</p>;
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedAdmin({ ...updatedAdmin, [name]: value });
+    const { name, value, files } = e.target;
+    if (name === "profilePic" && files.length > 0) {
+      setProfileFile(files[0]);
+    } else {
+      setUpdatedAdmin({ ...updatedAdmin, [name]: value });
+    }
   };
 
-  const handleSave = () => {
-    setAdmin(updatedAdmin);
-    setEditMode(false);
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("name", updatedAdmin.name);
+      formData.append("email", updatedAdmin.email);
+      if (profileFile) formData.append("profilePic", profileFile);
+
+      const res = await axios.patch(
+        `${import.meta.env.VITE_API_URL}/admin/update-admin`,
+        formData,
+        { withCredentials: true }
+      );
+
+      setAdmin(res.data.admin);
+      setUpdatedAdmin(res.data.admin);
+      setProfileFile(null);
+      setEditMode(false);
+      alert("Profile updated!");
+    } catch {
+      alert("Failed to update profile");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center items-center p-6">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md text-center border border-gray-200">
-        
-      
-        <div className="relative flex justify-center mb-4">
-          <img
-            src={updatedAdmin.profilePic}
-            alt="Profile"
-            className="w-28 h-28 rounded-full border-4 border-yellow-400 shadow-md object-cover"
-          />
-        </div>
+    <div className="min-h-screen flex justify-center items-center p-6 bg-gray-50">
+      <div className="bg-white p-8 rounded shadow w-full max-w-md text-center">
+        <img
+          src={profileFile ? URL.createObjectURL(profileFile) : updatedAdmin.profilePic}
+          alt="Profile"
+          className="w-28 h-28 rounded-full mx-auto mb-4 object-cover"
+        />
+        <h2 className="text-xl font-semibold">{admin.name}</h2>
+        <p className="text-gray-500 mb-4">Role : {admin.role}</p>
 
-        
-        <h2 className="text-2xl font-semibold text-gray-800 mb-1">
-          {admin.name}
-        </h2>
-        <p className="text-gray-500 mb-4 capitalize">{admin.role}</p>
-
-       
-        <div className="text-left space-y-3 mb-6">
-       
+        <div className="mb-4 text-left space-y-2">
           <div>
-            <p className="text-sm font-semibold text-gray-600">Name</p>
+            <p className="text-sm font-medium">Name</p>
             {editMode ? (
               <input
                 type="text"
                 name="name"
                 value={updatedAdmin.name}
                 onChange={handleChange}
-                className="border rounded-md w-full px-3 py-2 mt-1 text-gray-700 focus:ring-2 focus:ring-yellow-400"
+                className="border w-full px-2 py-1 rounded"
               />
             ) : (
-              <p className="text-gray-800">{admin.name}</p>
+              <p>{admin.name}</p>
             )}
           </div>
 
-         
           <div>
-            <p className="text-sm font-semibold text-gray-600">Email</p>
+            <p className="text-sm font-medium">Email</p>
             {editMode ? (
               <input
                 type="email"
                 name="email"
                 value={updatedAdmin.email}
                 onChange={handleChange}
-                className="border rounded-md w-full px-3 py-2 mt-1 text-gray-700 focus:ring-2 focus:ring-yellow-400"
+                className="border w-full px-2 py-1 rounded"
               />
             ) : (
-              <p className="text-gray-800">{admin.email}</p>
+              <p>{admin.email}</p>
             )}
           </div>
 
-       
           {editMode && (
             <div>
-              <p className="text-sm font-semibold text-gray-600">
-                Profile Picture URL
-              </p>
+              <p className="text-sm font-medium">Profile Picture</p>
               <input
-                type="text"
+                type="file"
                 name="profilePic"
-                value={updatedAdmin.profilePic}
+                accept="image/*"
                 onChange={handleChange}
-                className="border rounded-md w-full px-3 py-2 mt-1 text-gray-700 focus:ring-2 focus:ring-yellow-400"
+                className="border w-full px-2 py-1 rounded"
               />
             </div>
           )}
         </div>
 
-      
-        <div className="flex justify-center space-x-4">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-md shadow-md transition-all"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setEditMode(false)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-md shadow-md transition-all"
-              >
-                Cancel
-              </button>
-            </>
-          ) : (
+        {editMode ? (
+          <div className="flex justify-center space-x-2">
             <button
-              onClick={() => setEditMode(true)}
-              className="flex items-center bg-yellow-400 hover:bg-yellow-500 text-white px-5 py-2 rounded-md shadow-md transition-all"
+              onClick={handleSave}
+              className="px-4 py-2 bg-green-500 text-white rounded"
             >
-              <FaUserEdit className="mr-2" /> Edit Profile
+              Save
             </button>
-          )}
-        </div>
+            <button
+              onClick={() => {
+                setEditMode(false);
+                setUpdatedAdmin(admin);
+                setProfileFile(null);
+              }}
+              className="px-4 py-2 bg-gray-300 rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditMode(true)}
+            className="px-4 py-2 bg-yellow-400 text-white rounded"
+          >
+            Edit Profile
+          </button>
+        )}
       </div>
     </div>
   );

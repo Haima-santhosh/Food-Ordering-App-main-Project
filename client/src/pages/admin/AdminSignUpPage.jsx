@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AdminSignUpPage = () => {
   const navigate = useNavigate();
@@ -12,14 +13,16 @@ const AdminSignUpPage = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     const { fullName, email, password, confirmPassword } = formData;
 
@@ -33,18 +36,32 @@ const AdminSignUpPage = () => {
       return;
     }
 
-    console.log("Mock signup data:", formData);
+    try {
+      setLoading(true);
 
-    // Reset form
-    setFormData({
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
+      const response = await axios.post(
+        "https://food-ordering-app-main-project-1.onrender.com/api/admin/admin-signup", 
+        {
+          name: fullName,
+          email,
+          password,
+        },
+        { withCredentials: true }
+      );
 
-    // Redirect to Sign-in page after successful signup
-    navigate("/admin/signin");
+      console.log("Backend response:", response.data);
+
+      navigate("/admin/signin");
+    } catch (err) {
+      console.error(err);
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,9 +77,7 @@ const AdminSignUpPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Full Name
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Full Name</label>
             <input
               type="text"
               name="fullName"
@@ -74,9 +89,7 @@ const AdminSignUpPage = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Email Address
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Email Address</label>
             <input
               type="email"
               name="email"
@@ -88,9 +101,7 @@ const AdminSignUpPage = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Password
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Password</label>
             <input
               type="password"
               name="password"
@@ -102,9 +113,7 @@ const AdminSignUpPage = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Confirm Password
-            </label>
+            <label className="block text-gray-700 font-medium mb-1">Confirm Password</label>
             <input
               type="password"
               name="confirmPassword"
@@ -117,9 +126,12 @@ const AdminSignUpPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-all duration-300"
+            className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-all duration-300 ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 

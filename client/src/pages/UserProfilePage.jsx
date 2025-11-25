@@ -1,44 +1,48 @@
 import React, { useState, useContext, useEffect } from "react";
-import { UserContext } from "../context/UserContext"; 
-import userProfile from "../data/profile"; 
+import { UserContext } from "../context/UserContext";
+import axios from "axios";
 
 const UserProfilePage = () => {
-
-  //get user from context
-  const { user } = useContext(UserContext); 
-
-
-  const [profile, setProfile] = useState({ ...userProfile, name: "", email: "" });
+  const { user, signin } = useContext(UserContext);
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    profilePic: "",
+    address: "",
+  });
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [file, setFile] = useState(null);
 
-  // When user sign in, merge context user data 
+  // Fetch profile
   useEffect(() => {
-    if (user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: user.name,
-        email: user.email,
-      }));
-    }
+    const fetchProfile = async () => {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_URL}/user/user-profile`,
+          { withCredentials: true }
+        );
+
+        const u = data.user;
+        setProfile({
+          name: u.name || "",
+          email: u.email || "",
+          phone: u.phone || "",
+          profilePic: u.profilePic || "",
+          address: u.address || "",
+        });
+
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+        alert("Failed to load profile");
+      }
+    };
+
+    if (user) fetchProfile();
   }, [user]);
-
-
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (["street", "city", "pincode"].includes(name)) {
-      setProfile({ ...profile, address: { ...profile.address, [name]: value } });
-    } else {
-      setProfile({ ...profile, [name]: value });
-    }
-  };
-
-  const toggleEdit = () => setEditMode(!editMode);
-
-  const handleSave = () => {
-    setEditMode(false);
-    alert("Profile updated successfully!");
-  };
 
   if (!user) {
     return (
@@ -47,6 +51,48 @@ const UserProfilePage = () => {
       </div>
     );
   }
+
+  if (loading) {
+    return <div className="p-6 text-center">Loading profile...</div>;
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const toggleEdit = () => setEditMode(!editMode);
+
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("name", profile.name);
+      formData.append("phone", profile.phone);
+      formData.append("address", profile.address);
+      if (file) formData.append("profilePic", file);
+
+      const { data } = await axios.patch(
+        `${import.meta.env.VITE_API_URL}/user/update-user`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      signin(data.user);
+      setProfile(data.user);
+      setEditMode(false);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update profile");
+    }
+  };
 
   return (
     <div className="min-h-screen flex justify-center items-start bg-gray-100 p-6 pt-28">
@@ -57,7 +103,7 @@ const UserProfilePage = () => {
 
         <div className="flex justify-center mb-6">
           <img
-            src={profile.profilePic}
+            src={profile.profilePic || "/default-profile.png"}
             alt="Profile"
             className="w-28 h-28 rounded-full border-4 border-blue-100 shadow-md object-cover"
           />
@@ -73,10 +119,7 @@ const UserProfilePage = () => {
 
             <div className="border-t pt-4">
               <h3 className="font-semibold text-gray-700 mb-2">Address</h3>
-              <p className="text-gray-600 text-sm">
-                {profile.address.street}, {profile.address.city} -{" "}
-                {profile.address.pincode}
-              </p>
+              <p className="text-gray-600 text-sm">{profile.address}</p>
             </div>
 
             <div className="flex justify-center mt-6">
@@ -90,9 +133,10 @@ const UserProfilePage = () => {
           </div>
         ) : (
           <div className="space-y-4 text-sm">
-          
-          
-         {/* Edit Form */}
+            <div>
+              <label className="block text-gray-500">Profile Picture</label>
+              <input type="file" onChange={handleFileChange} />
+            </div>
 
             <div>
               <label className="block text-gray-500">Name</label>
@@ -128,38 +172,14 @@ const UserProfilePage = () => {
             </div>
 
             <div>
-              <label className="block text-gray-500">Street</label>
+              <label className="block text-gray-500">Address</label>
               <input
                 type="text"
-                name="street"
-                value={profile.address.street}
+                name="address"
+                value={profile.address}
                 onChange={handleChange}
                 className="w-full border rounded-lg p-2 mt-1 focus:ring-1 focus:ring-blue-400"
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-gray-500">City</label>
-                <input
-                  type="text"
-                  name="city"
-                  value={profile.address.city}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg p-2 mt-1 focus:ring-1 focus:ring-blue-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-500">Pincode</label>
-                <input
-                  type="text"
-                  name="pincode"
-                  value={profile.address.pincode}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg p-2 mt-1 focus:ring-1 focus:ring-blue-400"
-                />
-              </div>
             </div>
 
             <div className="flex justify-center gap-4 mt-6">

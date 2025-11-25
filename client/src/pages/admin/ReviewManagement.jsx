@@ -1,56 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const ReviewManagement = () => {
-  // --- Mock data ---
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      restaurant: "Spice Garden",
-      item: "Butter Chicken",
-      user: "Amit Sharma",
-      rating: 5,
-      comment: "Amazing taste and quick delivery!",
-    },
-    {
-      id: 2,
-      restaurant: "Sushi World",
-      item: "Salmon Roll",
-      user: "Priya Verma",
-      rating: 4,
-      comment: "Fresh and tasty, but a bit pricey.",
-    },
-    {
-      id: 3,
-      restaurant: "Pasta Palace",
-      item: "Penne Alfredo",
-      user: "Rahul Mehta",
-      rating: 3,
-      comment: "Good but sauce was too thick.",
-    },
-  ]);
-
+  const [reviews, setReviews] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editComment, setEditComment] = useState("");
 
-  // --- Handle delete ---
-  const handleDelete = (id) => {
-    setReviews(reviews.filter((r) => r.id !== id));
+  // Fetch all reviews from backend
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_API_URL}/review/all-review`,
+          { withCredentials: true }
+        );
+        setReviews(data.reviews || []);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  // Delete review
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/review/admin-delete-review/${id}`,
+        { withCredentials: true }
+      );
+
+      setReviews(reviews.filter((r) => r._id !== id));
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // Handle edit start
+  // Start editing
   const handleEdit = (review) => {
-    setEditingId(review.id);
+    setEditingId(review._id);
     setEditComment(review.comment);
   };
 
-  // --- Handle save ---
-  const handleSave = (id) => {
-    setReviews(
-      reviews.map((r) =>
-        r.id === id ? { ...r, comment: editComment } : r
-      )
-    );
-    setEditingId(null);
+  // Save updated comment
+  const handleSave = async (id) => {
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/review/admin-update/${id}`,
+        { comment: editComment },
+        { withCredentials: true }
+      );
+
+      setReviews(
+        reviews.map((r) =>
+          r._id === id ? { ...r, comment: editComment } : r
+        )
+      );
+
+      setEditingId(null);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -74,13 +84,25 @@ const ReviewManagement = () => {
 
           <tbody>
             {reviews.map((review) => (
-              <tr key={review.id} className="hover:bg-gray-50">
-                <td className="border px-4 py-2">{review.restaurant}</td>
-                <td className="border px-4 py-2">{review.item}</td>
-                <td className="border px-4 py-2">{review.user}</td>
-                <td className="border px-4 py-2 text-center">{review.rating} ⭐</td>
+              <tr key={review._id} className="hover:bg-gray-50">
                 <td className="border px-4 py-2">
-                  {editingId === review.id ? (
+                  {review.restId?.restName || "N/A"}
+                </td>
+
+                <td className="border px-4 py-2">
+                  {review.itemId?.itemName || "N/A"}
+                </td>
+
+                <td className="border px-4 py-2">
+                  {review.userId?.name || "N/A"}
+                </td>
+
+                <td className="border px-4 py-2 text-center">
+                  {review.rating} ⭐
+                </td>
+
+                <td className="border px-4 py-2">
+                  {editingId === review._id ? (
                     <input
                       value={editComment}
                       onChange={(e) => setEditComment(e.target.value)}
@@ -90,31 +112,34 @@ const ReviewManagement = () => {
                     review.comment
                   )}
                 </td>
+
                 <td className="border px-4 py-2 text-center space-x-2">
-                  {editingId === review.id ? (
+                  {editingId === review._id ? (
                     <button
-                      onClick={() => handleSave(review.id)}
-                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                      onClick={() => handleSave(review._id)}
+                      className="bg-green-500 text-white px-3 py-1 rounded"
                     >
                       Save
                     </button>
                   ) : (
                     <button
                       onClick={() => handleEdit(review)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                      className="bg-blue-500 text-white px-3 py-1 rounded mb-2"
                     >
                       Edit
                     </button>
                   )}
+
                   <button
-                    onClick={() => handleDelete(review.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => handleDelete(review._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
                 </td>
               </tr>
             ))}
+
             {reviews.length === 0 && (
               <tr>
                 <td

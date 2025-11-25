@@ -1,29 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const CouponManagement = () => {
-  const [coupons, setCoupons] = useState([
-    {
-      _id: 1,
-      code: "WELCOME100",
-      discount: 100,
-      minOrderValue: 500,
-      validFrom: "2025-11-01",
-      validTill: "2025-12-31",
-      isActive: true,
-    },
-    {
-      _id: 2,
-      code: "FOODIE20",
-      discount: 20,
-      minOrderValue: 300,
-      validFrom: "2025-10-15",
-      validTill: "2025-11-30",
-      isActive: false,
-    },
-  ]);
-
-  const [editingCoupon, setEditingCoupon] = useState(null);
-  const [newCoupon, setNewCoupon] = useState({
+  const [coupons, setCoupons] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({
     code: "",
     discount: "",
     minOrderValue: "",
@@ -32,118 +13,125 @@ const CouponManagement = () => {
     isActive: true,
   });
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const val = type === "checkbox" ? checked : value;
-    if (editingCoupon) {
-      setEditingCoupon({ ...editingCoupon, [name]: val });
-    } else {
-      setNewCoupon({ ...newCoupon, [name]: val });
+  // 🔥 Updated API URL
+  const API = "https://food-ordering-app-main-project-1.onrender.com/api/coupons";
+
+  // -----------------------------
+  // Load all coupons
+  // -----------------------------
+  const loadCoupons = async () => {
+    try {
+      const res = await axios.get(`${API}/all-coupon`, {
+        withCredentials: true,
+      });
+      setCoupons(res.data.coupons);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to load coupons");
     }
   };
 
-  const handleAdd = () => {
-    if (!newCoupon.code || !newCoupon.discount)
-      return alert("Please fill all fields");
-    setCoupons([
-      ...coupons,
-      { ...newCoupon, _id: Date.now() },
-    ]);
-    setNewCoupon({
-      code: "",
-      discount: "",
-      minOrderValue: "",
-      validFrom: "",
-      validTill: "",
-      isActive: true,
-    });
+  useEffect(() => {
+    loadCoupons();
+  }, []);
+
+  // -----------------------------
+  // Handle input change
+  // -----------------------------
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const val = type === "checkbox" ? checked : value;
+    if (editing) setEditing({ ...editing, [name]: val });
+    else setForm({ ...form, [name]: val });
   };
 
-  const handleDelete = (id) => {
-    setCoupons(coupons.filter((c) => c._id !== id));
+  // -----------------------------
+  // Add coupon
+  // -----------------------------
+  const addCoupon = async () => {
+    if (!form.code || !form.discount) return alert("Fill all fields");
+    try {
+      const res = await axios.post(`${API}/add-coupon`, form, {
+        withCredentials: true,
+      });
+      setCoupons([...coupons, res.data.newCoupon]);
+      setForm({
+        code: "",
+        discount: "",
+        minOrderValue: "",
+        validFrom: "",
+        validTill: "",
+        isActive: true,
+      });
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to add coupon");
+    }
   };
 
-  const handleEdit = (coupon) => {
-    setEditingCoupon(coupon);
+  // -----------------------------
+  // Delete coupon
+  // -----------------------------
+  const deleteCoupon = async (id) => {
+    if (!window.confirm("Delete this coupon?")) return;
+    try {
+      await axios.delete(`${API}/admin-delete-coupon/${id}`, {
+        withCredentials: true,
+      });
+      setCoupons(coupons.filter((c) => c._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to delete coupon");
+    }
   };
 
-  const handleUpdate = () => {
-    setCoupons(
-      coupons.map((c) => (c._id === editingCoupon._id ? editingCoupon : c))
-    );
-    setEditingCoupon(null);
+  // -----------------------------
+  // Update coupon
+  // -----------------------------
+  const updateCoupon = async () => {
+    try {
+      const res = await axios.patch(`${API}/admin-update-coupon/${editing._id}`, editing, {
+        withCredentials: true,
+      });
+      setCoupons(coupons.map((c) => (c._id === editing._id ? res.data.coupon : c)));
+      setEditing(null);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to update coupon");
+    }
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-        Coupon Management
-      </h2>
+      <h2 className="text-2xl font-semibold mb-4">Coupon Management</h2>
 
-    
-      <div className="bg-white shadow-md rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-medium mb-3 text-gray-600">Add Coupon</h3>
+      <div className="bg-white p-4 rounded shadow mb-6">
+        <h3 className="text-lg mb-3">{editing ? "Edit Coupon" : "Add Coupon"}</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <input
-            type="text"
-            name="code"
-            placeholder="Coupon Code"
-            value={newCoupon.code}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-          <input
-            type="number"
-            name="discount"
-            placeholder="Discount"
-            value={newCoupon.discount}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-          <input
-            type="number"
-            name="minOrderValue"
-            placeholder="Min Order Value"
-            value={newCoupon.minOrderValue}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-          <input
-            type="date"
-            name="validFrom"
-            value={newCoupon.validFrom}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-          <input
-            type="date"
-            name="validTill"
-            value={newCoupon.validTill}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-          <label className="flex items-center gap-2 text-gray-700">
-            <input
-              type="checkbox"
-              name="isActive"
-              checked={newCoupon.isActive}
-              onChange={handleChange}
-            />
-            Active
+          <input type="text" name="code" placeholder="Code" value={editing ? editing.code : form.code} onChange={handleChange} className="border p-2 rounded" />
+          <input type="number" name="discount" placeholder="Discount" value={editing ? editing.discount : form.discount} onChange={handleChange} className="border p-2 rounded" />
+          <input type="number" name="minOrderValue" placeholder="Min Order" value={editing ? editing.minOrderValue : form.minOrderValue} onChange={handleChange} className="border p-2 rounded" />
+          <input type="date" name="validFrom" value={editing ? editing.validFrom?.slice(0,10) : form.validFrom} onChange={handleChange} className="border p-2 rounded" />
+          <input type="date" name="validTill" value={editing ? editing.validTill?.slice(0,10) : form.validTill} onChange={handleChange} className="border p-2 rounded" />
+          <label className="flex items-center gap-2">
+            <input type="checkbox" name="isActive" checked={editing ? editing.isActive : form.isActive} onChange={handleChange} /> Active
           </label>
         </div>
-        <button
-          onClick={handleAdd}
-          className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Add
+
+        <button onClick={editing ? updateCoupon : addCoupon} className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          {editing ? "Save" : "Add"}
         </button>
+
+        {editing && (
+          <button onClick={() => setEditing(null)} className="mt-3 ml-2 px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
+            Cancel
+          </button>
+        )}
       </div>
 
-    
-      <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-        <table className="min-w-full text-sm text-left text-gray-600">
-          <thead className="bg-gray-100 text-gray-700 uppercase">
+      <div className="overflow-x-auto bg-white shadow rounded">
+        <table className="min-w-full text-left text-gray-600">
+          <thead className="bg-gray-100 uppercase text-gray-700">
             <tr>
               <th className="px-4 py-2">Code</th>
               <th className="px-4 py-2">Discount</th>
@@ -154,110 +142,34 @@ const CouponManagement = () => {
               <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            {coupons.map((coupon) =>
-              editingCoupon && editingCoupon._id === coupon._id ? (
-                <tr key={coupon._id} className="bg-yellow-50">
-                  <td className="px-4 py-2">
-                    <input
-                      type="text"
-                      name="code"
-                      value={editingCoupon.code}
-                      onChange={handleChange}
-                      className="border p-1 rounded w-full"
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <input
-                      type="number"
-                      name="discount"
-                      value={editingCoupon.discount}
-                      onChange={handleChange}
-                      className="border p-1 rounded w-full"
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <input
-                      type="number"
-                      name="minOrderValue"
-                      value={editingCoupon.minOrderValue}
-                      onChange={handleChange}
-                      className="border p-1 rounded w-full"
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <input
-                      type="date"
-                      name="validFrom"
-                      value={editingCoupon.validFrom}
-                      onChange={handleChange}
-                      className="border p-1 rounded w-full"
-                    />
-                  </td>
-                  <td className="px-4 py-2">
-                    <input
-                      type="date"
-                      name="validTill"
-                      value={editingCoupon.validTill}
-                      onChange={handleChange}
-                      className="border p-1 rounded w-full"
-                    />
-                  </td>
-                  <td className="px-4 py-2 text-center">
-                    <input
-                      type="checkbox"
-                      name="isActive"
-                      checked={editingCoupon.isActive}
-                      onChange={handleChange}
-                    />
-                  </td>
-                  <td className="px-4 py-2 text-center">
-                    <button
-                      onClick={handleUpdate}
-                      className="px-3 py-1 bg-green-500 text-white rounded mr-2 hover:bg-green-600"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingCoupon(null)}
-                      className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500"
-                    >
-                      Cancel
-                    </button>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={coupon._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 font-medium">{coupon.code}</td>
-                  <td className="px-4 py-2">{coupon.discount}</td>
-                  <td className="px-4 py-2">₹{coupon.minOrderValue}</td>
-                  <td className="px-4 py-2">{coupon.validFrom}</td>
-                  <td className="px-4 py-2">{coupon.validTill}</td>
-                  <td className="px-4 py-2">
-                    {coupon.isActive ? (
-                      <span className="text-green-600 font-semibold">Active</span>
-                    ) : (
-                      <span className="text-red-500 font-semibold">Inactive</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-center">
-                    <button
-                      onClick={() => handleEdit(coupon)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(coupon._id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
+            {coupons.map((c) => (
+              <tr key={c._id} className="hover:bg-gray-50">
+                <td className="px-4 py-2">{c.code}</td>
+                <td className="px-4 py-2">{c.discount}</td>
+                <td className="px-4 py-2">₹{c.minOrderValue}</td>
+                <td className="px-4 py-2">{new Date(c.validFrom).toLocaleDateString()}</td>
+                <td className="px-4 py-2">{new Date(c.validTill).toLocaleDateString()}</td>
+                <td className="px-4 py-2">
+                  {c.isActive ? (
+                    <span className="text-green-600">Active</span>
+                  ) : (
+                    <span className="text-red-500">Inactive</span>
+                  )}
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <button onClick={() => setEditing(c)} className="px-3 py-1 bg-blue-500 text-white rounded mr-2 hover:bg-blue-600">
+                    Edit
+                  </button>
+                  <button onClick={() => deleteCoupon(c._id)} className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
+
         </table>
       </div>
     </div>

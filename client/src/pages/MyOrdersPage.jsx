@@ -1,91 +1,141 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
 
 const MyOrdersPage = () => {
-  
-
-  // sample orders data
   const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Convert orders to state so we can update them
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      restaurant: "Pizza Palace",
-      items: ["Margherita Pizza", "Coke"],
-      total: 450,
-      status: "Delivered",
-    },
-    {
-      id: 2,
-      restaurant: "Sushi House",
-      items: ["Salmon Roll", "Miso Soup"],
-      total: 700,
-      status: "Preparing",
-    },
-    {
-      id: 3,
-      restaurant: "Burger Hub",
-      items: ["Cheeseburger", "Fries", "Pepsi"],
-      total: 350,
-      status: "Cancelled",
-    },
-  ]);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/order/my-orders`,
+          { withCredentials: true }
+        );
 
-  const cancelOrder = (orderId) => {
-    alert(`Order ${orderId} cancelled!`);
+        setOrders(res.data.order || []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status: "Cancelled" } : order
-      )
-    )
+  const cancelOrder = async (orderId) => {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/order/cancel-order/${orderId}`,
+        { withCredentials: true }
+      );
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === orderId ? { ...order, status: "cancelled" } : order
+        )
+      );
+      alert("Order cancelled successfully!");
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      alert("Failed to cancel order.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        Loading orders...
+      </div>
+    );
+  }
+
+  if (!orders.length) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-gray-700 text-lg">You have no orders yet.</p>
+        <button
+          onClick={() => navigate("/restaurants")}
+          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
+          Browse Restaurants
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen px-6 pt-20 pb-10 mt-10">
-      <h1 className="text-4xl font-bold text-center text-blue-700 dark:text-blue-300 rounded-lg shadow-md p-6 mb-10">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen px-6 pt-20 pb-10">
+      <h2 className="text-4xl font-bold text-center text-blue-700 dark:text-blue-300 rounded-lg shadow-md p-6 mb-10">
         My Orders
-      </h1>
+      </h2>
 
-      <div className="max-w-4xl mx-auto space-y-4">
-        {orders.length === 0 ? (
-          <p className="text-center text-gray-700">You have no orders yet.</p>
-        ) : (
-          orders.map((order) => (
-            <div key={order.id} className="bg-white p-4 rounded-lg shadow flex justify-between items-center">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {orders.map((order) => (
+          <div
+            key={order._id}
+            className="bg-white p-4 rounded-lg shadow flex flex-col gap-4"
+          >
+            <div className="flex justify-between items-center">
               <div>
-                <h2 className="font-semibold text-lg">{order.restaurant}</h2>
-                <p className="text-gray-600">
-                  Items: {order.items.join(", ")}
+                <p className="font-semibold">
+                  Order ID: <span className="text-gray-600">{order._id}</span>
                 </p>
-                <p className="text-gray-600">Total: ₹{order.total}</p>
-                <p
-                  className={`mt-1 font-medium ${
-                    order.status === "Delivered"
-                      ? "text-green-600"
-                      : order.status === "Cancelled"
-                      ? "text-red-600"
-                      : "text-yellow-600"
-                  }`}
-                >
-                  Status: {order.status}
+                <p className="text-gray-600">
+                  Restaurant: {order.restId?.restName || "Unknown"}
                 </p>
               </div>
 
-              {/* cancel button, if order is not delivered or cancelled */}
-              {order.status !== "Delivered" && order.status !== "Cancelled" && (
+              {order.status !== "delivered" && order.status !== "cancelled" && (
                 <button
-                  onClick={() => cancelOrder(order.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  onClick={() => cancelOrder(order._id)}
+                  className="bg-red-500 text-white text-md px-3 py-1 rounded hover:bg-red-600"
                 >
                   Cancel Order
                 </button>
               )}
             </div>
-          ))
-        )}
+
+            <div className="flex flex-wrap gap-4">
+              {order.items.map((item) => (
+                <div
+                  key={item.itemId?._id}
+                  className="flex items-center gap-2 border p-2 rounded"
+                >
+                  <img
+                    src={item.itemId?.itemImage}
+                    alt={item.itemId?.itemName}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div>
+                    <p className="font-medium">
+                      {item.itemId?.itemName || "Unknown"}
+                    </p>
+                    <p>Qty: {item.quantity}</p>
+                    <p>Price: ₹{item.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-between items-center mt-2">
+              <p className="font-semibold">Total: ₹{order.amount}</p>
+              <p
+                className={`font-medium ${
+                  order.status === "delivered"
+                    ? "text-green-600"
+                    : order.status === "cancelled"
+                    ? "text-red-600"
+                    : "text-yellow-600"
+                }`}
+              >
+                Status: {order.status}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="flex justify-center mt-8">

@@ -22,10 +22,10 @@ import MenuPage from "./pages/MenuPage";
 import SingleMenuDetailsPage from "./pages/SingleMenuDetailsPage";
 import ContactPage from "./pages/ContactPage";
 import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import OrderConfirmationPage from "./pages/OrderConfirmationPage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import MyReviews from "./pages/MyReviews";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentCancelPage from "./pages/PaymentCancelPage";
 
 //-------------ADMIN SIDE PAGES-------------------------
 import AdminLayout from "./layout/AdminSideLayout";
@@ -40,17 +40,18 @@ import ReviewManagement from "./pages/admin/ReviewManagement";
 import AdminProfile from "./pages/admin/AdminProfile";
 
 //-------------PROTECTED ROUTES-------------------------
+// Protect user-only routes
 function ProtectedRoute({ children }) {
   const { user } = useContext(UserContext);
   return user && user.role === "user" ? children : <Navigate to="/signin" />;
 }
 
+// Protect admin-only routes
 function ProtectedAdminRoute({ children }) {
   const { user } = useContext(UserContext);
   return user && user.role === "admin" ? children : <Navigate to="/admin/signin" />;
 }
 
-//-------------APP-------------------------
 function App() {
   return (
     <UserProvider>
@@ -65,6 +66,7 @@ function App() {
 
         {/* User Side Pages */}
         <Route path="/" element={<UserSideLayout />}>
+          {/* Home page */}
           <Route
             index
             element={
@@ -73,6 +75,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Other public pages */}
           <Route path="about" element={<AboutPage />} />
           <Route path="restaurants" element={<RestaurantPage />} />
           <Route path="restaurants/:restId/menu" element={<MenuPage />} />
@@ -85,22 +89,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <CartPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="checkout"
-            element={
-              <ProtectedRoute>
-                <CheckoutPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="order-confirmation"
-            element={
-              <ProtectedRoute>
-                <OrderConfirmationPage />
               </ProtectedRoute>
             }
           />
@@ -130,14 +118,20 @@ function App() {
           />
         </Route>
 
-        {/* Admin Side Pages */}
-    <Route path="/admin" element={
+        {/* Stripe Payment Result Pages */}
+        <Route path="/payment-success" element={<PaymentSuccessPage />} />
+        <Route path="/payment-cancel" element={<PaymentCancelPage />} />
 
-    <ProtectedAdminRoute>
-      <AdminLayout />
-    </ProtectedAdminRoute>
-  }>
-        <Route index element={<AdminDashboard />} />
+        {/* Admin Side Pages */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedAdminRoute>
+              <AdminLayout />
+            </ProtectedAdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="restaurants" element={<RestaurantManagement />} />
           <Route path="categories" element={<CategoryManagement />} />
@@ -145,7 +139,7 @@ function App() {
           <Route path="coupons" element={<CouponManagement />} />
           <Route path="orders" element={<OrderManagement />} />
           <Route path="reviews" element={<ReviewManagement />} />
-           <Route path="profile" element={<AdminProfile />} />
+          <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Routes>
     </UserProvider>

@@ -6,20 +6,20 @@ export const UserProvider = ({ children }) => {
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(localStorage.getItem("userData"));
     if (storedUser) setUser(storedUser);
   }, []);
 
   // Login function
   const signin = (userData) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("userData", JSON.stringify(userData));
   };
 
   // Logout function
   const signout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+   localStorage.removeItem("userData");
   };
 
   return (

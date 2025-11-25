@@ -1,60 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+const API = import.meta.env.VITE_API_URL; // 🔥 BASE URL FROM .env
 
 const OrderManagement = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      userName: "John Doe",
-      restName: "Spice Villa",
-      amount: 1200,
-      deliveryAddress: "123, MG Road, Bangalore",
-      status: "pending",
-      paymentStatus: "unpaid",
-      paymentMethod: "cod",
-    },
-    {
-      id: 2,
-      userName: "Sara Lee",
-      restName: "Taco Town",
-      amount: 950,
-      deliveryAddress: "56, Green Park, Delhi",
-      status: "delivered",
-      paymentStatus: "paid",
-      paymentMethod: "online",
-    },
-    {
-      id: 3,
-      userName: "David Smith",
-      restName: "Pizza Point",
-      amount: 670,
-      deliveryAddress: "12, High Street, Mumbai",
-      status: "preparing",
-      paymentStatus: "paid",
-      paymentMethod: "online",
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [editedStatus, setEditedStatus] = useState("");
 
-  const handleStatusChange = (id, newStatus) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
-  };
+  // Fetch all orders
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get(
+        `${API}/order/all-orders-admin`,
+        { withCredentials: true }
+      );
 
-  const handlePaymentChange = (id, newPayment) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === id ? { ...order, paymentStatus: newPayment } : order
-      )
-    );
-  };
+      const mappedOrders = data.order.map((order) => ({
+        id: order._id,
+        userName: order.userId?.name || "N/A",
+        restName: order.restId?.restName || "N/A",
+        amount: order.amount,
+        deliveryAddress: order.deliveryAddress,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        paymentMethod: order.paymentMethod,
+      }));
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this order?")) {
-      setOrders(orders.filter((order) => order.id !== id));
+      setOrders(mappedOrders);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+      alert("Failed to fetch orders.");
     }
   };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Start editing
+  const handleEdit = (order) => {
+    setEditingId(order.id);
+    setEditedStatus(order.status);
+  };
+
+  // Save updated status
+  const handleSave = async (id) => {
+    try {
+      await axios.patch(
+        `${API}/order/update-order-admin/${id}`,
+        { status: editedStatus },
+        { withCredentials: true }
+      );
+
+      setOrders(
+        orders.map((order) =>
+          order.id === id ? { ...order, status: editedStatus } : order
+        )
+      );
+
+      setEditingId(null);
+      setEditedStatus("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update status");
+    }
+  };
+
+  // Cancel (Delete) order
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+    try {
+      await axios.delete(
+        `${API}/order/admin/cancel-order/${id}`,
+        { withCredentials: true }
+      );
+
+      setOrders(orders.filter((order) => order.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to cancel order");
+    }
+  };
+
+  if (loading) return <div className="p-6 text-center">Loading orders...</div>;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
@@ -88,59 +121,66 @@ const OrderManagement = () => {
                 <td className="p-3">{order.restName}</td>
                 <td className="p-3 font-semibold">₹{order.amount}</td>
                 <td className="p-3">{order.deliveryAddress}</td>
-
-             
                 <td className="p-3">
-                  <select
-                    value={order.status}
-                    onChange={(e) =>
-                      handleStatusChange(order.id, e.target.value)
-                    }
-                    className="border rounded p-1 bg-white"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="preparing">Preparing</option>
-                    <option value="out_for_delivery">Out for Delivery</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                  {editingId === order.id ? (
+                    <select
+                      value={editedStatus}
+                      onChange={(e) => setEditedStatus(e.target.value)}
+                      className="border rounded p-1 bg-white"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="preparing">Preparing</option>
+                      <option value="out_for_delivery">Out for Delivery</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  ) : (
+                    <span className="capitalize">{order.status}</span>
+                  )}
                 </td>
-
-             
-                <td className="p-3">
-                  <select
-                    value={order.paymentStatus}
-                    onChange={(e) =>
-                      handlePaymentChange(order.id, e.target.value)
-                    }
-                    className="border rounded p-1 bg-white"
-                  >
-                    <option value="unpaid">Unpaid</option>
-                    <option value="paid">Paid</option>
-                    <option value="refunded">Refunded</option>
-                  </select>
-                </td>
-
+                <td className="p-3 capitalize">{order.paymentStatus}</td>
                 <td className="p-3 capitalize">{order.paymentMethod}</td>
 
-                <td className="p-3 text-center">
-                  <button
-                    onClick={() => handleDelete(order.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+                <td className="p-3 text-center flex justify-center gap-2">
+                  {editingId === order.id ? (
+                    <>
+                      <button
+                        onClick={() => handleSave(order.id)}
+                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="px-3 py-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleEdit(order)}
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(order.id)}
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
 
             {orders.length === 0 && (
               <tr>
-                <td
-                  colSpan="9"
-                  className="text-center py-6 text-gray-500 italic"
-                >
+                <td colSpan="9" className="text-center py-6 text-gray-500 italic">
                   No orders found
                 </td>
               </tr>
