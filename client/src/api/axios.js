@@ -1,8 +1,10 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // uses Render backend URL
-  withCredentials: true,
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:3000/api", // fallback for local development
+  withCredentials: true, // send cookies (sessions)
 });
 
 export default api;
