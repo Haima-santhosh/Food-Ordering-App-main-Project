@@ -15,7 +15,6 @@ app.use(cookieParser());
 // Allowed origins (local dev + Vercel frontend)
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://localhost:5174",
   "https://grabbite-food-ordering-app.vercel.app"
 ];
 
