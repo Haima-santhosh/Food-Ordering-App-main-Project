@@ -18,7 +18,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://grabbite-food-ordering-app.vercel.app"
+      "https://grabbite-food-ordering-app.vercel.app", 
+      "https://grabbite-food-ordering-app.vercel.app/" 
     ],
     credentials: true,
     allowedHeaders: [
@@ -31,6 +32,7 @@ app.use(
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   })
 );
+
 
 // ---------------------------
 
