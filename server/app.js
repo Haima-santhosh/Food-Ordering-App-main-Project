@@ -17,10 +17,9 @@ app.use(cookieParser());
 // -------------------------
 // CORS
 // -------------------------
-
 const allowedOrigins = [
-  "https://grabbite-food-ordering-app.vercel.app", // frontend production
-  "http://localhost:5173"                         // frontend dev
+  "https://grabbite-food-ordering-app.vercel.app",
+  "http://localhost:5173" // for local dev
 ];
 
 app.use(cors({
@@ -32,10 +31,8 @@ app.use(cors({
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true, // needed for session cookies
+  credentials: true, // send cookies for session
 }));
-
-
 
 // -------------------------
 // Session for auth
@@ -45,7 +42,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: process.env.NODE_ENV === "production", // true on HTTPS
+    secure: process.env.NODE_ENV === "production", // HTTPS only
     httpOnly: true, 
     sameSite: 'lax' 
   }

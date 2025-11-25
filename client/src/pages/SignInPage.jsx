@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
-// import axios for backend requests
 import api from "../api/axios";
 
 const SignInPage = () => {
@@ -26,23 +25,13 @@ const SignInPage = () => {
     setError("");
 
     try {
-      
-
-const response = await api.post("/user/user-signin", { email, password });
-
-
+      const response = await api.post("/user/user-signin", { email, password });
       const user = response.data.userObject;
-
-      // Update UserContext
       signin(user);
-
-      // Navigate to home page
       navigate("/", { replace: true });
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.data?.message || "Sign in failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Sign in failed. Please try again.");
     }
   };
 
