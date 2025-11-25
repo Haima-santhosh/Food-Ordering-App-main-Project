@@ -14,12 +14,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// CORS for local frontend
+// -------------------------
+// CORS
+// -------------------------
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://grabbite-food-ordering-app.vercel.app"
+  "https://grabbite-food-ordering-app.vercel.app",
+  "http://localhost:5173" // for local dev
 ];
-
 
 app.use(cors({
   origin: function(origin, callback) {
@@ -33,20 +34,30 @@ app.use(cors({
 }));
 
 
+// -------------------------
 // Session for auth
+// -------------------------
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secretkey',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, httpOnly: true, sameSite: 'lax' }
+  cookie: { 
+    secure: process.env.NODE_ENV === "production", // true on HTTPS
+    httpOnly: true, 
+    sameSite: 'lax' 
+  }
 }));
 
+// -------------------------
 // Routes
+// -------------------------
 app.use('/api', router);
 
 // Test route
 app.get('/', (req, res) => res.send('Backend working!'));
 
+// -------------------------
 // Connect DB & start server
+// -------------------------
 connectDB();
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
+app.listen(port, () => console.log(`Server running on port ${port}`));
