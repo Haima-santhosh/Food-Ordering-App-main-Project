@@ -15,14 +15,25 @@ app.use(cookieParser());
 
 // CORS for Render + Local development
 
+const allowedOrigins = [
+  "http://localhost:5174",
+  "https://food-ordering-app-main-project-client.onrender.com"
+];
+
 app.use(
   cors({
-    origin: [
-      process.env.VITE_CLIENT_URL || "http://localhost:5173",
-    ],
-    credentials: true, // important for sending cookies
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
+
+
 
 // Optional headers fix for cookies
 app.use((req, res, next) => {

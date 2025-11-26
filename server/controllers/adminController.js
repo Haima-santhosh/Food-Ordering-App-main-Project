@@ -173,8 +173,8 @@ const token = generateToken(adminExists._id, 'admin');
     // prevents JS access 
       httpOnly: true, 
        // change to true in production for https
-      secure: process.env.NODE_ENV==='PRODUCTION',
-      sameSite: 'Strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: 'none',
       maxAge : 60 * 60 * 1000 // 1 hr in milliseconds
     });
 
@@ -305,7 +305,7 @@ const logout = async(req,res) =>
        res.clearCookie('token',
         {
             httpOnly : true ,
-            secure : process.env.NODE_ENV ==='PRODUCTION' ,
+            secure: process.env.NODE_ENV === "production",
             sameSite : 'none'
         }
        )

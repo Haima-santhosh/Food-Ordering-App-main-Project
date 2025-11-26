@@ -159,13 +159,13 @@ const token = generateToken(userExists._id, 'user');
 
     res.cookie('token', token, {
      
-    // prevents JS access 
-      httpOnly: true, 
-       // change to true in production for https
-      secure: true,
-      sameSite: 'none',
-      maxAge : 60 * 60 * 1000 // 1 hr in milliseconds
-    });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "none",
+  path: "/",          // ⭐ REQUIRED FOR RENDER
+  maxAge: 60 * 60 * 1000
+});
+
 
 
  // Send response
@@ -240,13 +240,13 @@ const logout = async(req,res) =>
      {
        // Clear the token cookie
 
-       res.clearCookie('token',
-        {
-            httpOnly : true ,
-            secure : true ,
-            sameSite : 'Strict'
-        }
-       )
+       res.clearCookie("token", {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "none",
+  path: "/",          // ⭐ REQUIRED FOR RENDER
+});
+
        res.status(200).json({message:"User Logged Out Successfully"})
         
     } 
