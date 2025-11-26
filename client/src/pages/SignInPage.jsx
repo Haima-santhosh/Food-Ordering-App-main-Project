@@ -15,18 +15,31 @@ const SignInPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      const response = await api.post("/user/signin", formData);
-      const user = response.data.userObject;
-      signin(user);
-      navigate("/", { replace: true });
-    } catch (err) {
-      setError(err.response?.data?.message || "Sign in failed");
-    }
-  };
+  const { email, password } = formData;
+
+  if (!email || !password) {
+    setError("All fields are required");
+    return;
+  }
+
+  try {
+    const response = await api.post("/user/signin", { email, password });
+    console.log("API response:", response.data);
+
+    // Extract user object from backend response
+    const user = response.data.userObject;
+    signin(user);
+    navigate("/", { replace: true });
+  } catch (err) {
+    console.error("Sign in error:", err.response?.data || err.message);
+    setError(err.response?.data?.message || "Sign in failed. Please try again.");
+  }
+};
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
