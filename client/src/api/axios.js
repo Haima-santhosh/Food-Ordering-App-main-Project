@@ -1,14 +1,12 @@
+// src/api/axios.js
 import axios from "axios";
 
-const baseURL =
-  import.meta.env.VITE_API_URL || "http://localhost:5173/api"; // fallback for dev
-
 const api = axios.create({
-  baseURL,
+  baseURL: "https://food-ordering-app-main-project-server.onrender.com/api", // Backend URL
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  withCredentials: true, // Enable if using cookies/session auth
 });
 
 export default api;
