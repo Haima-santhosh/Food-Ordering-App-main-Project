@@ -1,11 +1,10 @@
 // app.js
 const express = require('express');
-const path = require('path');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/db');
-const router = require('./routes'); // Main API router
+const router = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +21,7 @@ const allowedOrigins = [
   "http://localhost:5174",
   "https://food-ordering-app-main-project-client.onrender.com",
 ];
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -33,7 +33,6 @@ app.use(cors({
   credentials: true,
 }));
 
-// Optional headers fix for cookies
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
@@ -50,14 +49,10 @@ connectDB();
 app.use('/api', router);
 
 // -----------------------------
-// SERVE REACT FRONTEND
+// DEFAULT ROOT MESSAGE
 // -----------------------------
-const frontendPath = path.join(__dirname, '../client/dist');
-app.use(express.static(frontendPath));
-
-// Catch-all for React SPA routing (must come **after** API routes)
-app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+app.get("/", (req, res) => {
+  res.send("Food App API is running...");
 });
 
 // -----------------------------
