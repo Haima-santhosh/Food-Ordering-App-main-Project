@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // CORS for Render + Local development
+
 app.use(
   cors({
     origin: [

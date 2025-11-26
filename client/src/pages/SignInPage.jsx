@@ -9,35 +9,39 @@ const SignInPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     const { email, password } = formData;
+
     if (!email || !password) {
       setError("All fields are required");
       return;
     }
 
     try {
-      // Make POST request to backend
+      // POST to backend API
       const response = await api.post("/user/signin", { email, password });
       console.log("API response:", response.data);
 
-      // Extract user object and update context
+      // Extract user object
       const user = response.data.userObject;
       signin(user);
 
-      // Navigate to home
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Sign in error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Sign in failed. Please try again.");
+      setError(
+        err.response?.data?.message || "Sign in failed. Please try again."
+      );
     }
   };
 
@@ -45,9 +49,14 @@ const SignInPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
-          Welcome Back to <span className="text-blue-700 font-extrabold">Grabbite !!</span>
+          Welcome Back to{" "}
+          <span className="text-blue-700 font-extrabold">Grabbite !!</span>
         </h2>
-        {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
+
+        {error && (
+          <div className="text-red-500 text-sm text-center mb-4">{error}</div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="email"
@@ -71,8 +80,12 @@ const SignInPage = () => {
             Sign In
           </button>
         </form>
+
         <p className="mt-6 text-center text-sm">
-          Don't have an account? <Link to="/signup" className="text-blue-600 font-semibold">Sign Up</Link>
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-blue-600 font-semibold">
+            Sign Up
+          </Link>
         </p>
       </div>
     </div>

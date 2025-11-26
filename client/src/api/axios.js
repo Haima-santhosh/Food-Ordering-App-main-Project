@@ -1,11 +1,12 @@
+// src/api/axios.js
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://food-ordering-app-main-project.onrender.com/api", // <-- your backend URL
+  baseURL: "https://food-ordering-app-main-project.onrender.com/api", // Backend URL
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // if you need cookies/session
+  withCredentials: true, // Enable if using cookies/session auth
 });
 
 export default api;
