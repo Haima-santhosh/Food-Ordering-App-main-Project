@@ -6,12 +6,12 @@ const upload = require('../middlewares/multer')
 
 
 // SIGNUP New Users
-// POST http://localhost:3000/api/user/signup
+// POST http://localhost:3000/api/user/user-signup
 userRouter.post('/user-signup',upload.single('profilePic'),signup)
 
 
 // SIGNIN Existing Users
-// POST http://localhost:3000/api/user/signin
+// POST http://localhost:3000/api/user/user-signin
 userRouter.post('/user-signin',signin)
 
 //checks if the current logged-in person is a valid, authenticated user
@@ -20,11 +20,11 @@ userRouter.get('/check-user',authUser,checkUser)
 
 
 //Access User Profile
-//GET http://localhost:3000/api/user/profile
+//GET http://localhost:3000/api/user/user-profile
 userRouter.get('/user-profile',authUser,profile)
 
 //User LOGOUT
-//POST http://localhost:3000/api/user/logout
+//POST http://localhost:3000/api/user/user-logout
 userRouter.post('/user-logout',authUser,logout)
 
 // UPDATE USER INFORMATIONS
