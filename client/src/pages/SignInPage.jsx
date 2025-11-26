@@ -19,7 +19,6 @@ const SignInPage = () => {
     setError("");
 
     const { email, password } = formData;
-
     if (!email || !password) {
       setError("All fields are required");
       return;
@@ -29,13 +28,14 @@ const SignInPage = () => {
       const response = await api.post("/user/user-signin", { email, password });
       console.log("Sign in response:", response.data);
 
+      // Save user in context
       signin(response.data.userObject);
+
+      // Redirect to homepage
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Sign in error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || "Sign in failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Sign in failed. Please try again.");
     }
   };
 

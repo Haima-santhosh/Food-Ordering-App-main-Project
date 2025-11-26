@@ -14,7 +14,6 @@ const SignUpPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "profilePic") {
@@ -24,13 +23,11 @@ const SignUpPage = () => {
     }
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     const { name, email, password, profilePic } = formData;
-
     if (!name || !email || !password) {
       setError("All fields are required");
       return;
@@ -54,9 +51,7 @@ const SignUpPage = () => {
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Signup error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || "Signup failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Signup failed. Please try again.");
     }
   };
 
