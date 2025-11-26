@@ -6,9 +6,15 @@ export const UserProvider = ({ children }) => {
 
   // Load user from localStorage safely
   useEffect(() => {
-    const savedUser = localStorage.getItem("userData");
-    const storedUser = savedUser ? JSON.parse(savedUser) : null;
-    if (storedUser) setUser(storedUser);
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("userData"));
+      if (storedUser) setUser(storedUser);
+    } catch (err) {
+      console.warn("Invalid userData in localStorage. Clearing it.");
+      localStorage.removeItem("userData");
+      console.log(err);
+      
+    }
   }, []);
 
   // Login function
