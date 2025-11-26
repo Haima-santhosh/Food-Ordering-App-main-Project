@@ -52,7 +52,6 @@ const SignUpPage = () => {
           <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
           <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
           <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
-          <input type="file" name="profilePic" accept="image/*" onChange={handleChange} className="w-full"/>
           <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sign Up</button>
         </form>
         <p className="mt-6 text-center text-sm">
