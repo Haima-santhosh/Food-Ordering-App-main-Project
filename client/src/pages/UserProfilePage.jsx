@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
-import axios from "axios";
+import api from "../api/axios"; // use your fixed axios instance
 
 const UserProfilePage = () => {
-  const { user, signin } = useContext(UserContext); // use signin instead of setUser
+  const { user, signin } = useContext(UserContext);
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -19,10 +19,7 @@ const UserProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await axios.get(
-          "http://localhost:3000/api/user/user-profile",
-          { withCredentials: true }
-        );
+        const { data } = await api.get("/user/user-profile"); // use api instance
         const u = data.user;
         setProfile({
           name: u.name || "",
@@ -73,16 +70,12 @@ const UserProfilePage = () => {
       formData.append("address", profile.address);
       if (file) formData.append("profilePic", file);
 
-      const { data } = await axios.patch(
-        "http://localhost:3000/api/user/update-user",
-        formData,
-        { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const { data } = await api.patch("/user/update-user", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      // Use signin instead of setUser to update context + localStorage
-      signin(data.user);
-
-      setProfile(data.user); // update local state
+      signin(data.user); // update context + localStorage
+      setProfile(data.user);
       setEditMode(false);
       alert("Profile updated successfully!");
     } catch (err) {
