@@ -41,13 +41,20 @@ const SignUpPage = () => {
       if (profilePic) form.append("profilePic", profilePic);
 
       const response = await api.post("/user/user-signup", form, {
-  headers: { "Content-Type": "multipart/form-data" },
-});
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       console.log("Signup response:", response.data);
 
-      // Auto-login after signup
+      if (!response.data.user) {
+        setError("Invalid response from server");
+        return;
+      }
+
+      // Auto-login safely
       signin(response.data.user);
+
+      // Redirect to homepage
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Signup error:", err.response?.data || err.message);
@@ -62,9 +69,7 @@ const SignUpPage = () => {
           Create your <span className="text-blue-700 font-extrabold">Account</span>
         </h2>
 
-        {error && (
-          <div className="text-red-500 text-sm text-center mb-4">{error}</div>
-        )}
+        {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input

@@ -25,10 +25,15 @@ const SignInPage = () => {
     }
 
     try {
-     const response = await api.post("/user/user-signin", { email, password });
+      const response = await api.post("/user/user-signin", { email, password });
       console.log("Sign in response:", response.data);
 
-      // Save user in context
+      if (!response.data.userObject) {
+        setError("Invalid response from server");
+        return;
+      }
+
+      // Save user safely in context
       signin(response.data.userObject);
 
       // Redirect to homepage
@@ -46,9 +51,7 @@ const SignInPage = () => {
           Welcome Back to <span className="text-blue-700 font-extrabold">Grabbite !!</span>
         </h2>
 
-        {error && (
-          <div className="text-red-500 text-sm text-center mb-4">{error}</div>
-        )}
+        {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
