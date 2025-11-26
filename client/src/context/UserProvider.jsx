@@ -4,9 +4,10 @@ import { UserContext } from "./UserContext";
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // Load user from localStorage on mount
+  // Load user from localStorage safely
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("userData"));
+    const savedUser = localStorage.getItem("userData");
+    const storedUser = savedUser ? JSON.parse(savedUser) : null;
     if (storedUser) setUser(storedUser);
   }, []);
 
@@ -19,7 +20,7 @@ export const UserProvider = ({ children }) => {
   // Logout function
   const signout = () => {
     setUser(null);
-   localStorage.removeItem("userData");
+    localStorage.removeItem("userData");
   };
 
   return (
