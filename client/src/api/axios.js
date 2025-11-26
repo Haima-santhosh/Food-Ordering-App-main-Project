@@ -1,8 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL + "/api",
-  withCredentials: true, // allow sending cookies
+  baseURL: "https://food-ordering-app-main-project.onrender.com/api", // <-- your backend URL
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true, // if you need cookies/session
 });
 
 export default api;
