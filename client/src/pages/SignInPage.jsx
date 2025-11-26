@@ -25,8 +25,8 @@ const SignInPage = () => {
     setError("");
 
     try {
-      const response = await api.post("/user/user-signin", { email, password });
-      
+     const response = await api.post("/user/signin", { email, password });
+
 
       const user = response.data.userObject;
       signin(user);

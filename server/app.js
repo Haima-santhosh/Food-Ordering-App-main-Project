@@ -14,27 +14,32 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // -------------------------
-// CORS (Render Frontend + Local Dev)
+// CORS for Render + Local
 // -------------------------
-const allowedOrigins = [
-  "https://food-ordering-app-main-project-client.onrender.com",
-  "http://localhost:5173"
-];
-
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true,
+    origin: [
+      "https://food-ordering-app-main-project-client.onrender.com",
+      "http://localhost:5173",
+    ],
+    credentials: true, // required for cookies
   })
 );
 
+// FIX: Important headers for cookies (Render)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 // Routes
 app.use('/api', router);
 
-// Test route
-app.get('/', (req, res) => res.send('Backend working!'));
+// Test Route
+app.get('/', (req, res) => {
+  res.send("Backend working!");
+});
 
-// Connect DB & start server
+// Connect DB and start server
 connectDB();
 app.listen(port, () => console.log(`Server running on port ${port}`));
