@@ -25,7 +25,7 @@ const SignInPage = () => {
     }
 
     try {
-      const response = await api.post("/user/user-signin", { email, password });
+     const response = await api.post("/user/user-signin", { email, password });
       console.log("Sign in response:", response.data);
 
       // Save user in context

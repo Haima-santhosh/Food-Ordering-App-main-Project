@@ -41,8 +41,8 @@ const SignUpPage = () => {
       if (profilePic) form.append("profilePic", profilePic);
 
       const response = await api.post("/user/user-signup", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  headers: { "Content-Type": "multipart/form-data" },
+});
 
       console.log("Signup response:", response.data);
 
