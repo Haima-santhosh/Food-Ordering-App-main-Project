@@ -1,39 +1,37 @@
+// app.js
 const express = require('express');
-const app = express();
-require('dotenv').config();
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+require('dotenv').config();
 const connectDB = require('./config/db');
-const router = require('./routes');
+const router = require('./routes'); // Main API router
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// -----------------------------
+// MIDDLEWARES
+// -----------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// CORS for Render + Local development
-
+// CORS setup
 const allowedOrigins = [
   "http://localhost:5174",
-  "https://food-ordering-app-main-project-client.onrender.com"
+  "https://food-ordering-app-main-project-client.onrender.com",
 ];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
-
-
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 
 // Optional headers fix for cookies
 app.use((req, res, next) => {
@@ -41,12 +39,38 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// -----------------------------
+// DATABASE CONNECTION
+// -----------------------------
+connectDB();
+
+// -----------------------------
+// API ROUTES
+// -----------------------------
 app.use('/api', router);
 
-// Test route
-app.get('/', (req, res) => res.send("Backend working!"));
+// -----------------------------
+// SERVE REACT FRONTEND
+// -----------------------------
+const frontendPath = path.join(__dirname, '../client/dist');
+app.use(express.static(frontendPath));
 
-// Connect DB and start server
-connectDB();
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Catch-all for React SPA routing (must come **after** API routes)
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+// -----------------------------
+// ERROR HANDLING
+// -----------------------------
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({ message: err.message || "Internal Server Error" });
+});
+
+// -----------------------------
+// START SERVER
+// -----------------------------
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

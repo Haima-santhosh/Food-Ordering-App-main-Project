@@ -18,29 +18,15 @@ const SignInPage = () => {
     e.preventDefault();
     setError("");
 
-    const { email, password } = formData;
-    if (!email || !password) {
-      setError("All fields are required");
-      return;
-    }
-
     try {
-      const response = await api.post("/user/user-signin", { email, password });
+      const response = await api.post("/user/user-signin", formData);
       console.log("Sign in response:", response.data);
 
-      if (!response.data.userObject) {
-        setError("Invalid response from server");
-        return;
-      }
-
-      // Save user safely in context
-      signin(response.data.userObject);
-
-      // Redirect to homepage
+      signin(response.data.userObject); // save to context
       navigate("/", { replace: true });
     } catch (err) {
-      console.error("Sign in error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Sign in failed. Please try again.");
+      console.error(err.response?.data || err.message);
+      setError(err.response?.data?.message || "Sign in failed");
     }
   };
 
@@ -50,9 +36,7 @@ const SignInPage = () => {
         <h2 className="text-2xl font-semibold text-center mb-6">
           Welcome Back to <span className="text-blue-700 font-extrabold">Grabbite !!</span>
         </h2>
-
         {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
-
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="email"
@@ -76,7 +60,6 @@ const SignInPage = () => {
             Sign In
           </button>
         </form>
-
         <p className="mt-6 text-center text-sm">
           Don't have an account?{" "}
           <Link to="/signup" className="text-blue-600 font-semibold">

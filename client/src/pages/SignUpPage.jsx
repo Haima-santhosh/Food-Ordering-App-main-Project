@@ -5,12 +5,7 @@ import api from "../api/axios";
 
 const SignUpPage = () => {
   const { signin } = useContext(UserContext);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    profilePic: null,
-  });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", profilePic: null });
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -27,38 +22,22 @@ const SignUpPage = () => {
     e.preventDefault();
     setError("");
 
-    const { name, email, password, profilePic } = formData;
-    if (!name || !email || !password) {
-      setError("All fields are required");
-      return;
-    }
-
     try {
       const form = new FormData();
-      form.append("name", name);
-      form.append("email", email);
-      form.append("password", password);
-      if (profilePic) form.append("profilePic", profilePic);
+      form.append("name", formData.name);
+      form.append("email", formData.email);
+      form.append("password", formData.password);
+      if (formData.profilePic) form.append("profilePic", formData.profilePic);
 
       const response = await api.post("/user/user-signup", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Signup response:", response.data);
-
-      if (!response.data.user) {
-        setError("Invalid response from server");
-        return;
-      }
-
-      // Auto-login safely
-      signin(response.data.user);
-
-      // Redirect to homepage
+      signin(response.data.user); // auto-login
       navigate("/", { replace: true });
     } catch (err) {
-      console.error("Signup error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Signup failed. Please try again.");
+      console.error(err.response?.data || err.message);
+      setError(err.response?.data?.message || "Signup failed");
     }
   };
 
@@ -68,54 +47,16 @@ const SignUpPage = () => {
         <h2 className="text-2xl font-semibold text-center mb-6">
           Create your <span className="text-blue-700 font-extrabold">Account</span>
         </h2>
-
         {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
-
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <input
-            type="file"
-            name="profilePic"
-            accept="image/*"
-            onChange={handleChange}
-            className="w-full"
-          />
-          <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Sign Up
-          </button>
+          <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+          <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+          <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+          <input type="file" name="profilePic" accept="image/*" onChange={handleChange} className="w-full"/>
+          <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sign Up</button>
         </form>
-
         <p className="mt-6 text-center text-sm">
-          Already have an account?{" "}
-          <Link to="/signin" className="text-blue-600 font-semibold">
-            Sign In
-          </Link>
+          Already have an account? <Link to="/signin" className="text-blue-600 font-semibold">Sign In</Link>
         </p>
       </div>
     </div>
