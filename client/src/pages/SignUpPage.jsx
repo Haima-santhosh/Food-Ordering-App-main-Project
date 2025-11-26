@@ -1,27 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
 import api from "../api/axios";
 
 const SignUpPage = () => {
-  const navigate = useNavigate();
-
+  const { signin } = useContext(UserContext);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    profilePic: null,
   });
-
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
+  // Handle input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, files } = e.target;
+    if (name === "profilePic") {
+      setFormData((prev) => ({ ...prev, profilePic: files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const { name, email, password } = formData;
+    const { name, email, password, profilePic } = formData;
 
     if (!name || !email || !password) {
       setError("All fields are required");
@@ -29,77 +37,83 @@ const SignUpPage = () => {
     }
 
     try {
-      // Signup API call
-      const response = await api.post("/user/user-signup", formData);
+      const form = new FormData();
+      form.append("name", name);
+      form.append("email", email);
+      form.append("password", password);
+      if (profilePic) form.append("profilePic", profilePic);
 
-      console.log("Signup Response:", response.data);
+      const response = await api.post("/user/user-signup", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      // Redirect to sign-in page after successful signup
-      navigate("/signin");
+      console.log("Signup response:", response.data);
 
+      // Auto-login after signup
+      signin(response.data.user);
+      navigate("/", { replace: true });
     } catch (err) {
-      console.log(err);
-      setError(err.response?.data?.message || "Signup failed!");
+      console.error("Signup error:", err.response?.data || err.message);
+      setError(
+        err.response?.data?.message || "Signup failed. Please try again."
+      );
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-100 to-slate-200">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-center text-gray-800">Create An Account</h2>
-        <p className="text-center text-gray-500 mb-8 mt-4">
-          Join <span className="text-xl font-extrabold text-blue-700">Grabbite</span> in Seconds
-        </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          Create your <span className="text-blue-700 font-extrabold">Account</span>
+        </h2>
 
         {error && (
-          <div className="text-red-500 text-sm text-center mb-2">{error}</div>
+          <div className="text-red-500 text-sm text-center mb-4">{error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="text"
-            placeholder="Full Name"
             name="name"
+            placeholder="Name"
             value={formData.name}
             onChange={handleChange}
-            autoComplete="name"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-400"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
             required
           />
-
           <input
             type="email"
-            placeholder="Email"
             name="email"
+            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            autoComplete="email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-400"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
             required
           />
-
           <input
             type="password"
-            placeholder="Password"
             name="password"
+            placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            autoComplete="new-password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-400"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
             required
           />
-
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition"
-          >
+          <input
+            type="file"
+            name="profilePic"
+            accept="image/*"
+            onChange={handleChange}
+            className="w-full"
+          />
+          <button className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             Sign Up
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-600 mt-4">
+        <p className="mt-6 text-center text-sm">
           Already have an account?{" "}
-          <Link to="/signin" className="text-blue-500 font-semibold hover:underline">
+          <Link to="/signin" className="text-blue-600 font-semibold">
             Sign In
           </Link>
         </p>

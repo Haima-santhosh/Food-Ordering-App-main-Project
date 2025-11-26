@@ -9,13 +9,11 @@ const SignInPage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,14 +26,10 @@ const SignInPage = () => {
     }
 
     try {
-      // POST to backend API
-      const response = await api.post("/user/signin", { email, password });
-      console.log("API response:", response.data);
+      const response = await api.post("/user/user-signin", { email, password });
+      console.log("Sign in response:", response.data);
 
-      // Extract user object
-      const user = response.data.userObject;
-      signin(user);
-
+      signin(response.data.userObject);
       navigate("/", { replace: true });
     } catch (err) {
       console.error("Sign in error:", err.response?.data || err.message);
@@ -49,8 +43,7 @@ const SignInPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
         <h2 className="text-2xl font-semibold text-center mb-6">
-          Welcome Back to{" "}
-          <span className="text-blue-700 font-extrabold">Grabbite !!</span>
+          Welcome Back to <span className="text-blue-700 font-extrabold">Grabbite !!</span>
         </h2>
 
         {error && (
