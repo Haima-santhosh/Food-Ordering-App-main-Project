@@ -26,6 +26,8 @@ const SignInPage = () => {
 
     try {
       const response = await api.post("/user/user-signin", { email, password });
+      
+
       const user = response.data.userObject;
       signin(user);
       navigate("/", { replace: true });
