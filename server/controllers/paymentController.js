@@ -3,110 +3,146 @@ const Order = require("../models/orderModel");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Create Stripe session
+// Creates a Stripe checkout session
 const createCheckoutSession = async (req, res) => {
   try {
     const { cart, address, coupon, total, restId } = req.body;
-    const userId = req.user?.id;
 
-    if (!cart || cart.length === 0)
+    // Basic validations
+    if (!cart || cart.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
+    }
 
-    if (!address)
-      return res.status(400).json({ message: "Address required" });
+    if (!address || !address.trim()) {
+      return res.status(400).json({ message: "Delivery address is required" });
+    }
 
-    if (!userId)
-      return res.status(401).json({ message: "User not logged in" });
+    if (!restId) {
+      return res.status(400).json({ message: "Restaurant ID missing" });
+    }
 
-    // STEP 1: Create pending order
-    const order = await Order.create({
-      userId,
-      restId,
-      items: cart.map((i) => ({
-        id: i.itemId,
-        qty: i.quantity
-      })),
-      address,
-      totalAmount: total,
-      couponName: coupon?.code || null,
-      paymentStatus: "Pending"
-    });
+    if (!total || total <= 0) {
+      return res.status(400).json({ message: "Invalid total amount" });
+    }
 
-    const clientURL = process.env.CLIENT_URL;
-
-    // STEP 2 — Create session with ONLY orderId
+    // Create the Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
       payment_method_types: ["card"],
+      mode: "payment",
 
       line_items: [
         {
           price_data: {
             currency: "inr",
-            product_data: { name: "Order Payment" },
-            unit_amount: Math.round(total * 100),
+            product_data: { name: "Order Total" },
+            unit_amount: Math.round(total * 100), // convert to paise
           },
           quantity: 1,
         },
       ],
 
-      success_url: `${clientURL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${clientURL}/cart`,
+      // Redirect URLs
+      success_url:
+        "http://localhost:5173/payment-success?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: "http://localhost:5173/payment-cancel",
 
+
+      // Extra info saved for later
       metadata: {
-        orderId: String(order._id),
+        address,
+        restId,
+        cart: JSON.stringify(cart),
+        couponId: coupon ? coupon._id : "none",
+        couponName: coupon ? coupon.code : "none",
       },
     });
 
-    res.json({ url: session.url });
-  } catch (err) {
-    console.error("Stripe session error:", err);
-    res.status(500).json({ message: "Stripe checkout failed" });
+    return res.status(200).json({ url: session.url });
+  } catch (error) {
+    console.error("Stripe checkout error:", error.message);
+    return res.status(500).json({ message: "Stripe checkout failed" });
   }
 };
 
-
-// Verify Payment
+// Verifies Stripe session and saves the order
 const verifyCheckoutSession = async (req, res) => {
   try {
     const { sessionId } = req.body;
-    if (!sessionId) return res.status(400).json({ message: "Session ID missing" });
 
+    if (!sessionId) {
+      return res.status(400).json({ message: "Session ID missing" });
+    }
+
+    // Fetch Stripe session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (!session)
-      return res.status(400).json({ message: "Session not found" });
+    if (session.payment_status !== "paid") {
+      return res.json({ message: "Payment not completed" });
+    }
 
-    if (session.payment_status !== "paid")
-      return res.status(400).json({ message: "Payment not completed" });
+    // Avoid saving the same order twice
+    const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
 
-    const orderId = session.metadata.orderId;
-    if (!orderId)
-      return res.status(400).json({ message: "Order ID missing" });
+    if (existingOrder) {
+      return res.json({
+        message: "Payment successful",
+        order: {
+          orderId: existingOrder._id,
+          totalAmount: existingOrder.amount,
+          paymentStatus: existingOrder.paymentStatus,
+          couponName: existingOrder.couponName,
+          address: existingOrder.deliveryAddress,
+        },
+      });
+    }
 
-    // Update order
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      {
-        paymentStatus: "Paid",
-        paymentId: session.id,
-      },
-      { new: true }
-    );
+    const cartItems = JSON.parse(session.metadata.cart || "[]");
 
-    return res.json({
-      message: "Order placed successfully",
-      order: updatedOrder,
+    // Create new order
+    const newOrder = new Order({
+      userId: req.user.id,
+      restId: session.metadata.restId,
+
+      items: cartItems.map((item) => ({
+        itemId: item.itemId,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+
+      couponId:
+        session.metadata.couponId === "none" ? null : session.metadata.couponId,
+
+      couponName:
+        session.metadata.couponName === "none"
+          ? null
+          : session.metadata.couponName,
+
+      amount: session.amount_total / 100,
+      deliveryAddress: session.metadata.address,
+      paymentStatus: "Completed",
+      paymentMethod: "card",
+      stripeSessionId: sessionId,
+
+      // Order starts in pending status
+      status: "pending",
     });
 
+    await newOrder.save();
+
+    return res.json({
+      message: "Payment successful",
+      order: {
+        orderId: newOrder._id,
+        totalAmount: newOrder.amount,
+        paymentStatus: newOrder.paymentStatus,
+        couponName: newOrder.couponName,
+        address: newOrder.deliveryAddress,
+      },
+    });
   } catch (err) {
-    console.error("Payment verify error:", err);
-    return res.status(500).json({ message: "Payment verification failed" });
+    console.log("verify error:", err.message);
+    res.status(500).json({ message: "Failed to verify payment" });
   }
 };
 
-
-module.exports = {
-  createCheckoutSession,
-  verifyCheckoutSession,
-};
+module.exports = { createCheckoutSession, verifyCheckoutSession };
