@@ -169,14 +169,12 @@ const token = generateToken(adminExists._id, 'admin');
 // Set the token as cookie 
 
     res.cookie('token', token, {
-     
-    // prevents JS access 
-      httpOnly: true, 
-       // change to true in production for https
-      secure: process.env.NODE_ENV === "production",
-      sameSite: 'none',
-      maxAge : 60 * 60 * 1000 // 1 hr in milliseconds
-    });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 60 * 60 * 1000,
+});
+
 
 
  // Send response
