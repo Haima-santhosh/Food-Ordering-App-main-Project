@@ -1,26 +1,28 @@
-// middlewares/authAdmin.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
 
-const authAdmin = async (req, res, next) => {
+// Middleware to check if an Admin is logged in
+const authAdmin = (req, res, next) => {
   try {
-    // Get token from cookies
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: 'Not authorized, token missing' });
+    const token = req.cookies?.token;
+
+    if (!token) {
+      return res.status(401).json({ error: "Admin is not authorized" });
+    }
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    const admin = await User.findById(decoded.id);
 
-    if (!admin || admin.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied, not an admin' });
+    // Role check
+    if (!decoded || decoded.role !== "admin") {
+      return res.status(403).json({ error: "Access denied. Not an Admin" });
     }
 
-    req.admin = admin; // attach admin to request
+    req.admin = decoded; // attach admin info
     next();
-  } catch (err) {
-    console.error('authAdmin error:', err);
-    res.status(401).json({ message: 'Not authorized, invalid token' });
+
+  } catch (error) {
+    console.error("AuthAdmin Error:", error.message);
+    return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
 
