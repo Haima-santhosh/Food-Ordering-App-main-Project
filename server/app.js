@@ -13,23 +13,28 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Define allowed frontend URLs
+const allowedOrigins = [
+  "https://food-ordering-app-main-project-client.onrender.com",
+  "http://localhost:5173" // for local development
+];
 
-
+// CORS setup
 app.use(cors({
-  origin: "https://food-ordering-app-main-project-client.onrender.com",
-  credentials: true
-}));
+  origin: function (origin, callback) {
+    // allow requests with no origin (like Postman)
+    if (!origin) return callback(null, true);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
   },
-  credentials: true,
+  credentials: true, // allow cookies
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
 
 // DATABASE CONNECTION
 connectDB();
