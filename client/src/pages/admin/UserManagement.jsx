@@ -12,7 +12,8 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get("/admin/users");
+      const { data } = await api.get("/admin/users", { withCredentials: true });
+
       setUsers(data.users || []);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch users");
@@ -60,6 +61,7 @@ const UserManagement = () => {
 
       await api.patch(`/admin/update-user/${userId}`, data, {
         headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
       });
 
       cancelEditing();
@@ -72,7 +74,10 @@ const UserManagement = () => {
   const deleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await api.delete(`/admin/delete-user/${userId}`);
+     await api.delete(`/admin/delete-user/${userId}`, {
+  withCredentials: true,
+});
+
       fetchUsers();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete user");
