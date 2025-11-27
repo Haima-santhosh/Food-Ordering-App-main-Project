@@ -13,10 +13,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// CORS setup for Render + local
-const allowedOrigins = [
-  "https://food-ordering-app-main-project-client.onrender.com"
-];
+
+
+app.use(cors({
+  origin: "https://food-ordering-app-main-project-client.onrender.com",
+  credentials: true
+}));
 
 app.use(cors({
   origin: (origin, callback) => {

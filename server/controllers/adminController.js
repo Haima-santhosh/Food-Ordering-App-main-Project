@@ -53,9 +53,10 @@ const signup = async (req, res) => {
 };
 
 // ------------------ SIGNIN ADMIN ------------------
+
 const signin = async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Please fill all required fields" });
@@ -63,38 +64,34 @@ const signin = async (req, res) => {
 
     const admin = await User.findOne({ email });
     if (!admin) return res.status(400).json({ message: "Admin does not exist" });
-
-    if (admin.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Not an admin." });
-    }
+    if (admin.role !== "admin") return res.status(403).json({ message: "Access denied. Not admin." });
 
     const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) return res.status(400).json({ error: "Invalid password" });
+    if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+
+    const token = generateToken(admin._id, "admin");
+
+    // SET COOKIE (cross-origin safe)
+   res.cookie("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // true only in prod HTTPS
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000
+});
+
 
     const adminObj = admin.toObject();
     delete adminObj.password;
 
-    const token = generateToken(admin._id, "admin");
-
-    res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // true on Render HTTPS
-  sameSite: "none", // needed for cross-origin (client + server on different domains)
-  path: "/",
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-});
-
-
-    return res.status(200).json({
-      message: "Admin sign-in successful!",
-      admin: adminObj
-    });
+    res.status(200).json({ message: "Admin signed in", admin: adminObj });
 
   } catch (error) {
     console.error("Signin error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 // ------------------ CHECK ADMIN ------------------
 const checkAdmin = async (req, res) => {
