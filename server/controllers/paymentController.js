@@ -73,39 +73,42 @@ const verifyCheckoutSession = async (req, res) => {
       return res.status(400).json({ message: "Missing session ID" });
     }
 
+    console.log("Session ID received:", sessionId);
+
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (!session || session.payment_status !== "paid") {
+    if (!session) {
+      return res.status(400).json({ message: "Session not found" });
+    }
+
+    if (session.payment_status !== "paid") {
       return res.status(400).json({ message: "Payment not completed" });
     }
 
-    const {
-      userId,
-      restId,
-      address,
-      total,
-      couponName,
-      cartItems
-    } = session.metadata;
+    const meta = session.metadata;
 
-    const parsedCart = JSON.parse(cartItems);
+    if (!meta) {
+      return res.status(400).json({ message: "Invalid metadata" });
+    }
 
-    // Save order
+    const cartItems = JSON.parse(meta.cartItems);
+    
     const order = await Order.create({
-      userId,
-      restId,
-      items: parsedCart,
-      address,
-      totalAmount: total,
-      couponName: couponName || null,
+      userId: meta.userId,
+      restId: meta.restId,
+      items: cartItems,
+      address: meta.address,
+      totalAmount: Number(meta.total),
+      couponName: meta.couponName || null,
       paymentId: session.id,
       paymentStatus: "Paid",
     });
 
-    res.json({ message: "Order placed", order });
+    return res.json({ message: "Order placed", order });
+
   } catch (err) {
     console.error("Payment verify error:", err);
-    res.status(500).json({ message: "Payment verification failed" });
+    return res.status(500).json({ message: "Payment verification failed" });
   }
 };
 
