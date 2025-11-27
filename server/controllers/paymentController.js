@@ -3,11 +3,12 @@ const Order = require("../models/orderModel");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Create Stripe checkout session
+// Creates a Stripe checkout session
 const createCheckoutSession = async (req, res) => {
   try {
     const { cart, address, coupon, total, restId } = req.body;
 
+    // Basic validations
     if (!cart || cart.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
@@ -24,6 +25,7 @@ const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ message: "Invalid total amount" });
     }
 
+    // Create the Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -33,16 +35,18 @@ const createCheckoutSession = async (req, res) => {
           price_data: {
             currency: "inr",
             product_data: { name: "Order Total" },
-            unit_amount: Math.round(total * 100),
+            unit_amount: Math.round(total * 100), // convert to paise
           },
           quantity: 1,
         },
       ],
 
+      // Redirect URLs
       success_url:
         "http://localhost:5173/payment-success?session_id={CHECKOUT_SESSION_ID}",
       cancel_url: "http://localhost:5173/cart",
 
+      // Extra info saved for later
       metadata: {
         address,
         restId,
@@ -59,7 +63,7 @@ const createCheckoutSession = async (req, res) => {
   }
 };
 
-// Verify payment and Save order
+// Verifies Stripe session and saves the order
 const verifyCheckoutSession = async (req, res) => {
   try {
     const { sessionId } = req.body;
@@ -68,38 +72,40 @@ const verifyCheckoutSession = async (req, res) => {
       return res.status(400).json({ message: "Session ID missing" });
     }
 
+    // Fetch Stripe session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status !== "paid") {
       return res.json({ message: "Payment not completed" });
     }
 
-    //  Check if already saved
-    const alreadySaved = await Order.findOne({ stripeSessionId: sessionId });
-    if (alreadySaved) {
+    // Avoid saving the same order twice
+    const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+
+    if (existingOrder) {
       return res.json({
         message: "Payment successful",
         order: {
-          orderId: alreadySaved._id,
-          totalAmount: alreadySaved.amount,
-          paymentStatus: alreadySaved.paymentStatus,  
-          couponName: alreadySaved.couponName,         
-          address: alreadySaved.deliveryAddress,
+          orderId: existingOrder._id,
+          totalAmount: existingOrder.amount,
+          paymentStatus: existingOrder.paymentStatus,
+          couponName: existingOrder.couponName,
+          address: existingOrder.deliveryAddress,
         },
       });
     }
 
     const cartItems = JSON.parse(session.metadata.cart || "[]");
 
-    //  Create new order
+    // Create new order
     const newOrder = new Order({
       userId: req.user.id,
       restId: session.metadata.restId,
 
-      items: cartItems.map((it) => ({
-        itemId: it.itemId,
-        quantity: it.quantity,
-        price: it.price,
+      items: cartItems.map((item) => ({
+        itemId: item.itemId,
+        quantity: item.quantity,
+        price: item.price,
       })),
 
       couponId:
@@ -112,11 +118,11 @@ const verifyCheckoutSession = async (req, res) => {
 
       amount: session.amount_total / 100,
       deliveryAddress: session.metadata.address,
-      paymentStatus: "Completed", 
+      paymentStatus: "Completed",
       paymentMethod: "card",
       stripeSessionId: sessionId,
 
-      // Order status should stay pending
+      // Order starts in pending status
       status: "pending",
     });
 
@@ -127,8 +133,8 @@ const verifyCheckoutSession = async (req, res) => {
       order: {
         orderId: newOrder._id,
         totalAmount: newOrder.amount,
-        paymentStatus: newOrder.paymentStatus, 
-        couponName: newOrder.couponName,      
+        paymentStatus: newOrder.paymentStatus,
+        couponName: newOrder.couponName,
         address: newOrder.deliveryAddress,
       },
     });
