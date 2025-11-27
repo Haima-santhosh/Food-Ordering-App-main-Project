@@ -85,13 +85,19 @@ const CategoryManagement = () => {
           required
         />
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
-            {loading ? "Saving..." : editingId ? "Update Category" : "Add Category"}
-          </button>
+        <button
+  type="submit"
+  disabled={loading}
+  className="
+    flex-1 bg-blue-600 text-white py-2 rounded 
+    hover:bg-blue-700 transition 
+    mx-auto block w-40
+  "
+>
+  {loading ? "Saving..." : editingId ? "Update Category" : "Add Category"}
+</button>
+
+
           {editingId && (
             <button
               type="button"

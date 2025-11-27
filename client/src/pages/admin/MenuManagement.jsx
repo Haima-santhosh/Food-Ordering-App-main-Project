@@ -171,11 +171,12 @@ const MenuManagement = () => {
         </div>
         <div className="mt-3 flex flex-col md:flex-row gap-2">
           <button
-            onClick={editingItem ? handleUpdate : handleAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex-1"
-          >
-            {editingItem ? "Update" : "Add"}
-          </button>
+  onClick={editingItem ? handleUpdate : handleAdd}
+  className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto w-fit block"
+>
+  {editingItem ? "Update" : "Add"}
+</button>
+
           {editingItem && (
             <button
               onClick={() => {
