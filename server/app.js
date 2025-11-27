@@ -18,9 +18,8 @@ app.use(cookieParser());
 
 // CORS setup
 const allowedOrigins = [
-  "http://localhost:5174", // local dev
-  "https://food-ordering-app-main-project-client.onrender.com", // render client url
-  
+  "http://localhost:5174",
+  "https://food-ordering-app-main-project-client.onrender.com",
 ];
 
 app.use(cors({
@@ -34,6 +33,10 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 // -----------------------------
 // DATABASE CONNECTION
