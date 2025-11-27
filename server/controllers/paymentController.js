@@ -3,25 +3,31 @@ const Order = require("../models/orderModel");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Creates a Stripe checkout session
+// Create checkout session
 const createCheckoutSession = async (req, res) => {
   try {
     const { cart, address, coupon, total, restId } = req.body;
+    const userId = req.user?.id;
 
-    // Validations
-    if (!cart || cart.length === 0)
+    if (!cart || cart.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
-    if (!address || !address.trim())
+    }
+    if (!address?.trim()) {
       return res.status(400).json({ message: "Delivery address is required" });
-    if (!restId) return res.status(400).json({ message: "Restaurant ID missing" });
-    if (!total || total <= 0)
+    }
+    if (!restId) {
+      return res.status(400).json({ message: "Restaurant ID missing" });
+    }
+    if (!total || total <= 0) {
       return res.status(400).json({ message: "Invalid total amount" });
+    }
+    if (!userId) {
+      return res.status(401).json({ message: "User not logged in" });
+    }
 
-    // Use deployed frontend URL from env
-    const successUrl = `${process.env.VITE_CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${process.env.VITE_CLIENT_URL}/payment-cancel`;
+    // Render server cannot use Vite variables
+    const clientURL = process.env.CLIENT_URL;
 
-    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -29,92 +35,81 @@ const createCheckoutSession = async (req, res) => {
         {
           price_data: {
             currency: "inr",
-            product_data: { name: "Order Total" },
+            product_data: { name: "Order Payment" },
             unit_amount: Math.round(total * 100),
           },
           quantity: 1,
         },
       ],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url: `${clientURL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientURL}/cart`,
       metadata: {
-        address,
+        userId,
         restId,
-        cart: JSON.stringify(cart),
-        couponId: coupon ? coupon._id : "none",
-        couponName: coupon ? coupon.code : "none",
+        address,
+        total: String(total),
+        couponName: coupon ? coupon.code : "",
+        // Avoid metadata overflow
+        cartItems: JSON.stringify(cart.map(item => ({
+          id: item.itemId,
+          qty: item.quantity
+        })))
       },
     });
 
-    return res.status(200).json({ url: session.url });
-  } catch (error) {
-    console.error("Stripe checkout error:", error.message);
-    return res.status(500).json({ message: "Stripe checkout failed" });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe checkout error:", err);
+    res.status(500).json({ message: "Stripe checkout failed" });
   }
 };
 
-// Verifies Stripe session and saves the order
+// Verify session & create order
 const verifyCheckoutSession = async (req, res) => {
   try {
     const { sessionId } = req.body;
-    if (!sessionId)
-      return res.status(400).json({ message: "Session ID missing" });
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.payment_status !== "paid")
-      return res.status(400).json({ message: "Payment not completed" });
-
-    // Prevent duplicate orders
-    const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
-    if (existingOrder) {
-      return res.json({
-        message: "Payment successful",
-        order: {
-          orderId: existingOrder._id,
-          totalAmount: existingOrder.amount,
-          paymentStatus: existingOrder.paymentStatus,
-          couponName: existingOrder.couponName,
-          address: existingOrder.deliveryAddress,
-        },
-      });
+    if (!sessionId) {
+      return res.status(400).json({ message: "Missing session ID" });
     }
 
-    const cartItems = JSON.parse(session.metadata.cart || "[]");
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    const newOrder = new Order({
-      userId: req.user.id,
-      restId: session.metadata.restId,
-      items: cartItems.map((item) => ({
-        itemId: item.itemId,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      couponId: session.metadata.couponId === "none" ? null : session.metadata.couponId,
-      couponName: session.metadata.couponName === "none" ? null : session.metadata.couponName,
-      amount: session.amount_total / 100,
-      deliveryAddress: session.metadata.address,
-      paymentStatus: "Completed",
-      paymentMethod: "card",
-      stripeSessionId: sessionId,
-      status: "pending",
+    if (!session || session.payment_status !== "paid") {
+      return res.status(400).json({ message: "Payment not completed" });
+    }
+
+    const {
+      userId,
+      restId,
+      address,
+      total,
+      couponName,
+      cartItems
+    } = session.metadata;
+
+    const parsedCart = JSON.parse(cartItems);
+
+    // Save order
+    const order = await Order.create({
+      userId,
+      restId,
+      items: parsedCart,
+      address,
+      totalAmount: total,
+      couponName: couponName || null,
+      paymentId: session.id,
+      paymentStatus: "Paid",
     });
 
-    await newOrder.save();
-
-    return res.json({
-      message: "Payment successful",
-      order: {
-        orderId: newOrder._id,
-        totalAmount: newOrder.amount,
-        paymentStatus: newOrder.paymentStatus,
-        couponName: newOrder.couponName,
-        address: newOrder.deliveryAddress,
-      },
-    });
+    res.json({ message: "Order placed", order });
   } catch (err) {
-    console.error("verify error:", err.message);
-    return res.status(500).json({ message: "Failed to verify payment" });
+    console.error("Payment verify error:", err);
+    res.status(500).json({ message: "Payment verification failed" });
   }
 };
 
-module.exports = { createCheckoutSession, verifyCheckoutSession };
+module.exports = {
+  createCheckoutSession,
+  verifyCheckoutSession,
+};
