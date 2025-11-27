@@ -113,7 +113,7 @@ const CartPage = () => {
       </h1>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Cart Items */}
+        
         <div className="md:col-span-2 space-y-4">
           {cartItems.map((item) => (
             <div
@@ -177,7 +177,7 @@ const CartPage = () => {
           </div>
         </div>
 
-        {/* Order Summary */}
+     
         <div className="bg-white dark:bg-slate-800 p-6 rounded shadow">
           <h3 className="font-semibold mb-4">Order Summary</h3>
 
@@ -200,7 +200,7 @@ const CartPage = () => {
 
           <hr className="my-4 border-gray-300 dark:border-gray-600" />
 
-          {/* Coupons */}
+        
           <div className="mt-4">
             <h4 className="font-semibold mb-2">Coupons</h4>
             {coupons.length === 0 ? (
@@ -229,7 +229,7 @@ const CartPage = () => {
             {message && <p className="text-green-500 mt-2">{message}</p>}
           </div>
 
-          {/* Delivery Address */}
+       
           <div className="mt-4">
             <h4 className="font-semibold mb-2">Delivery Address</h4>
             <input

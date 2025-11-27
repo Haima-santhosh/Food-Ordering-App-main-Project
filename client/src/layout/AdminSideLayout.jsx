@@ -12,14 +12,14 @@ const AdminSideLayout = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
+    
       <AdminHeader toggleSidebar={toggleSidebar} />
 
       <div className="flex flex-1 pt-16">
-        {/* Sidebar */}
+       
         <AdminSidebar open={sidebarOpen} closeSidebar={closeSidebar} />
 
-        {/* Main content */}
+     
         <main className="flex-1 p-4 md:p-6 bg-gray-50 dark:bg-gray-800 overflow-auto">
           <Outlet />
         </main>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios"; // <- use your configured axios instance
+import api from "../api/axios"; 
 import Pagination from "../components/Pagination";
 
 const Restaurants = () => {
@@ -26,7 +26,7 @@ const Restaurants = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await api.get("/restaurants/view-restaurants"); // <- api instance
+        const response = await api.get("/restaurants/view-restaurants"); 
         setRestaurants(response.data.restaurants || []);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch restaurants.");
@@ -61,7 +61,7 @@ const Restaurants = () => {
             Explore Your Favourite Restaurants
           </h1>
 
-          {/* Search + Filter */}
+         
           <div className="flex flex-col md:flex-row justify-between gap-4 mb-10">
             <input
               type="text"
@@ -84,7 +84,7 @@ const Restaurants = () => {
             </select>
           </div>
 
-          {/* Restaurant Cards */}
+          
           {filteredRestaurants.length === 0 ? (
             <p className="text-center text-gray-500 italic">No restaurants found.</p>
           ) : (

@@ -4,7 +4,8 @@ const ContactPage = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-28 pb-16 px-6">
       <div className="max-w-5xl mx-auto">
-        {/* Title Section */}
+       
+
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-3 p-4 shadow rounded-md">
             Get in Touch ✉️
@@ -14,9 +15,10 @@ const ContactPage = () => {
           </p>
         </div>
 
-        {/* Contact Form */}
+      
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Contact Form */}
+         
+
           <div className="bg-white dark:bg-slate-800 shadow-lg rounded-2xl p-8 hover:shadow-xl transition-shadow">
             <form noValidate>
               <div className="space-y-5">
@@ -66,7 +68,7 @@ const ContactPage = () => {
             </form>
           </div>
 
-          {/* Contact Information */}
+          
           <div className="bg-white dark:bg-slate-800 shadow-lg rounded-2xl p-8 flex flex-col justify-center hover:shadow-xl transition-shadow">
             <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-6 border-b border-gray-300 dark:border-slate-700 pb-2">
               Contact Details

@@ -23,7 +23,7 @@ const SignInPage = () => {
       const response = await api.post("/user/user-signin", formData);
       console.log("Sign in response:", response.data);
 
-      signin(response.data.userObject); // save to context
+      signin(response.data.userObject); 
       navigate("/", { replace: true });
     } catch (err) {
       console.error(err.response?.data || err.message);

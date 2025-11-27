@@ -13,11 +13,11 @@ const SingleMenuDetailsPage = () => {
   const [rating, setRating] = useState("");
   const [comment, setComment] = useState("");
 
-  // LOAD MENU LIST → Filter One Item
+  // LOAD MENU LIST  Filter One Item
   useEffect(() => {
     const loadMenuItem = async () => {
       try {
-        const res = await api.get("/menu/get-menu"); // <- use api
+        const res = await api.get("/menu/get-menu"); 
         const item = res.data.menu.find(
           (m) => String(m.itemId) === String(itemId) && String(m.restId) === String(restId)
         );
@@ -35,7 +35,7 @@ const SingleMenuDetailsPage = () => {
   useEffect(() => {
     const loadDetails = async () => {
       try {
-        const res = await api.get(`/menu/get-menu-details/${itemId}`); // <- use api
+        const res = await api.get(`/menu/get-menu-details/${itemId}`);
         setMenuItem(res.data.menu || null);
         setRestaurant(res.data.restaurant || null);
       } catch (err) {

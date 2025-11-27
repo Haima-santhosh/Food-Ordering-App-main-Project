@@ -94,7 +94,7 @@ const UserManagement = () => {
         <p className="text-center py-6 text-red-500">{error}</p>
       ) : (
         <>
-          {/* Desktop Table */}
+        
           <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
             <table className="min-w-full text-sm text-left border-collapse">
               <thead className="bg-gray-100 text-gray-700">
@@ -227,7 +227,7 @@ const UserManagement = () => {
             </table>
           </div>
 
-          {/* Mobile Cards */}
+        
           <div className="md:hidden space-y-4">
             {users.length === 0 ? (
               <p className="text-center py-6 text-gray-500">No users found</p>

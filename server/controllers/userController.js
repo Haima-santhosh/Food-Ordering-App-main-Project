@@ -162,7 +162,7 @@ const token = generateToken(userExists._id, 'user');
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "none",
-  path: "/",          // ⭐ REQUIRED FOR RENDER
+  path: "/",          //  REQUIRED FOR RENDER
   maxAge: 60 * 60 * 1000
 });
 
@@ -244,7 +244,7 @@ const logout = async(req,res) =>
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "none",
-  path: "/",          // ⭐ REQUIRED FOR RENDER
+  path: "/",          // for render
 });
 
        res.status(200).json({message:"User Logged Out Successfully"})

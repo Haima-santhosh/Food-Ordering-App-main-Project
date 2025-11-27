@@ -29,7 +29,7 @@ const AdminSignInPage = () => {
       const { data } = await api.post(
         "/admin/admin-signin",
         { email, password },
-        { withCredentials: true } // important if backend sets httpOnly cookie
+        { withCredentials: true } // if backend sets httpOnly cookie
       );
 
       // Save admin data to context

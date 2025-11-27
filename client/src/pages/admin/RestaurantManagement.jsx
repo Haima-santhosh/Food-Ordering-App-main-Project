@@ -188,7 +188,7 @@ const RestaurantManagement = () => {
         </button>
       </form>
 
-      {/* Desktop Table */}
+     
       <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow-md">
         <table className="min-w-full border-collapse">
           <thead className="bg-gray-100">
@@ -247,7 +247,7 @@ const RestaurantManagement = () => {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+     
       <div className="md:hidden space-y-4">
         {restaurants.length === 0 && (
           <p className="text-center py-6 text-gray-500">No restaurants found</p>

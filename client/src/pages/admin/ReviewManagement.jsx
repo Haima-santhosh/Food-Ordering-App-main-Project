@@ -55,7 +55,7 @@ const ReviewManagement = () => {
         Review Management
       </h2>
 
-      {/* Desktop Table */}
+     
       <div className="hidden md:block overflow-x-auto bg-white shadow-md rounded-lg">
         <table className="min-w-full border border-gray-200">
           <thead className="bg-blue-100 text-gray-700">
@@ -133,7 +133,7 @@ const ReviewManagement = () => {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+     
       <div className="md:hidden space-y-4">
         {reviews.length === 0 && (
           <p className="text-center py-6 text-gray-500">No reviews available</p>

@@ -80,7 +80,7 @@ const CouponManagement = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <h2 className="text-2xl font-semibold mb-4 text-center">Coupon Management</h2>
 
-      {/* Add/Edit Form */}
+     
       <div className="bg-white p-4 rounded shadow mb-6">
         <h3 className="text-lg mb-3">{editing ? "Edit Coupon" : "Add Coupon"}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -151,7 +151,7 @@ const CouponManagement = () => {
         </div>
       </div>
 
-      {/* Desktop Table */}
+      
       <div className="hidden md:block overflow-x-auto bg-white shadow rounded">
         <table className="min-w-full text-left text-gray-600">
           <thead className="bg-gray-100 uppercase text-gray-700">
@@ -207,7 +207,7 @@ const CouponManagement = () => {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+     
       <div className="md:hidden space-y-4">
         {coupons.length === 0 && (
           <p className="text-center py-6 text-gray-500">No coupons found</p>

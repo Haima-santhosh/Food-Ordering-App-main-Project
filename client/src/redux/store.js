@@ -6,7 +6,7 @@ const cartSlice = createSlice({
   reducers: {
     addItem: (state, action) => {
       const item = action.payload;
-      // Make sure itemId exists, fallback to _id
+      // check if the itemId exists, if not fallback to _id
       const id = item.itemId || item._id;
 
       const existingItem = state.find((i) => (i.itemId || i._id) === id);

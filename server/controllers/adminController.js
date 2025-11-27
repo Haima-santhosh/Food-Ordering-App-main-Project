@@ -71,7 +71,7 @@ const signin = async (req, res) => {
 
     const token = generateToken(admin._id, "admin");
 
-    // SET COOKIE (cross-origin safe)
+    // SET COOKIE 
    res.cookie("token", token, {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production", // true only in prod HTTPS

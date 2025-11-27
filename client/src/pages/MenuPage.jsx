@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api/axios"; // <- use your configured axios instance
+import api from "../api/axios"; 
 import Pagination from "../components/Pagination";
 import CartButton from "../components/CartButton";
 
@@ -18,7 +18,7 @@ const MenuPage = () => {
   useEffect(() => {
     const loadRestaurant = async () => {
       try {
-        const res = await api.get("/restaurants/view-restaurants"); // <- use api
+        const res = await api.get("/restaurants/view-restaurants"); 
         const found = res.data.restaurants.find((r) => r._id === restId);
         setRestaurant(found || null);
       } catch (err) {
@@ -32,7 +32,7 @@ const MenuPage = () => {
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        const res = await api.get("/menu/get-menu"); // <- use api
+        const res = await api.get("/menu/get-menu"); 
         const list = res.data.menu.filter((item) => item.restId === restId);
         setMenu(list);
       } catch (err) {
@@ -42,7 +42,7 @@ const MenuPage = () => {
     loadMenu();
   }, [restId]);
 
-  // Filter + Sort
+  
   const filteredMenu = menu
     .filter((item) => item.itemName.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
@@ -59,7 +59,7 @@ const MenuPage = () => {
             Enjoy Your Favourite Dishes From {restaurant ? restaurant.restName : "Restaurant"}
           </h1>
 
-          {/* Search + Back + Sort */}
+         
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10">
             <input
               type="text"
@@ -92,7 +92,6 @@ const MenuPage = () => {
             </select>
           </div>
 
-          {/* Menu Grid */}
           {filteredMenu.length === 0 ? (
             <p className="text-center text-gray-500 dark:text-gray-400">
               No menu items found 🍔🌯

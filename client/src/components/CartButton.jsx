@@ -10,7 +10,7 @@ const CartButton = ({ item }) => {
 
  const handleAdd = async () => {
   try {
-    // 1) Add item to redux
+    //  Add item to redux
     dispatch(addItem({
       itemId: item._id,
       itemName: item.itemName,
@@ -20,13 +20,13 @@ const CartButton = ({ item }) => {
       quantity: 1,
     }));
 
-    // 2) Save to backend (wait for success)
+    // Save to backend 
     await api.post("/cart/add-cart", {
       itemId: item._id,
       quantity: 1,
     });
 
-    // 3) FORCE NAVIGATION — If no error, go to cart
+    // NAVIGATION — If no error, go to cart
     navigate("/cart");
 
   } catch (err) {

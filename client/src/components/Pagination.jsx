@@ -6,6 +6,7 @@ import React from "react";
 // onPageChange: function to handle page change
  
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+
   // Don't render if there's only one page
   if (totalPages <= 1) return null;
 
@@ -18,7 +19,7 @@ for (let i = 1; i <= totalPages; i++) {
   return (
     <div className="flex justify-center items-center gap-2 pb-10">
 
-      {/* Previous Button */}
+     
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -28,7 +29,7 @@ for (let i = 1; i <= totalPages; i++) {
         Prev
       </button>
 
-      {/* Page Numbers */}
+      
       {pages.map((num) => (
         <button
           key={num}
@@ -43,7 +44,7 @@ for (let i = 1; i <= totalPages; i++) {
         </button>
       ))}
 
-      {/* Next Button */}
+     
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}

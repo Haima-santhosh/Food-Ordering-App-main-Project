@@ -222,6 +222,7 @@ const Cart = require('../models/cartModel');
 
 
     // APPLY COUPON BY USER
+    
 // Apply coupon when user clicks "Apply"
 const applyCoupon = async (req, res) => {
   try {
@@ -261,7 +262,7 @@ const applyCoupon = async (req, res) => {
     let totalAfterDiscount = totalAmount - coupon.discount;
     if (totalAfterDiscount < 0) totalAfterDiscount = 0;
 
-    // Send response to frontend
+    // Send response to client
     return res.status(200).json({
       message: "Coupon applied successfully",
       discount: coupon.discount,

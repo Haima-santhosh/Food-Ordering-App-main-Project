@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios"; // use the shared axios instance
+import api from "../api/axios"; 
 
 const MyOrdersPage = () => {
   const navigate = useNavigate();

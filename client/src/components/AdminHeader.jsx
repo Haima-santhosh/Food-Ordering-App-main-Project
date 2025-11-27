@@ -15,7 +15,7 @@ const AdminHeader = ({ toggleSidebar }) => {
   return (
     <header className="bg-gray-800 text-white shadow-md fixed w-full top-0 left-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4">
-        {/* Mobile menu toggle */}
+    
         <button
           className="md:hidden text-white text-xl mr-2"
           onClick={toggleSidebar}
@@ -23,13 +23,13 @@ const AdminHeader = ({ toggleSidebar }) => {
           <FaBars />
         </button>
 
-        {/* Logo */}
+       
         <Link to="/admin" className="flex items-center space-x-2">
           <span className="text-2xl font-bold text-yellow-400">Grabbite</span>
           <span className="text-lg font-medium">Admin</span>
         </Link>
 
-        {/* User dropdown */}
+       
         <div className="relative">
           <div
             className="flex items-center space-x-2 cursor-pointer bg-gray-700 px-4 py-2 rounded-md hover:bg-gray-600"

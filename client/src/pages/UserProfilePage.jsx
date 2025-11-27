@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
-import api from "../api/axios"; // use your fixed axios instance
+import api from "../api/axios"; 
 
 const UserProfilePage = () => {
   const { user, signin } = useContext(UserContext);
@@ -19,7 +19,7 @@ const UserProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await api.get("/user/user-profile"); // use api instance
+        const { data } = await api.get("/user/user-profile"); 
         const u = data.user;
         setProfile({
           name: u.name || "",

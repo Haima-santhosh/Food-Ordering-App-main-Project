@@ -72,7 +72,7 @@ const OrderManagement = () => {
         Order Management
       </h2>
 
-      {/* Desktop Table */}
+     
       <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow-md">
         <table className="min-w-full text-sm text-left text-gray-700 border-collapse">
           <thead className="bg-gray-100 text-gray-800 uppercase">
@@ -162,7 +162,7 @@ const OrderManagement = () => {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+     
       <div className="md:hidden space-y-4">
         {orders.length === 0 && (
           <p className="text-center py-6 text-gray-500 italic">No orders found</p>

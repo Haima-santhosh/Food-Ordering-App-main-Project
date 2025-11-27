@@ -151,6 +151,7 @@ const getCategoryByUser = async (req, res) => {
 }
 
 // GET Single Category Details IN USER SIDE
+
 const getCategoryDataByUser = async (req, res) => {
   try {
     // Category ID of Category to view from request parameters
