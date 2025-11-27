@@ -27,7 +27,7 @@ const AdminSignInPage = () => {
 
       // Send login request to backend
       const { data } = await axios.post(
-        "http://localhost:3000/api/admin/admin-signin",
+        "/admin/admin-signin",
         { email, password },
         { withCredentials: true } // important if backend sets httpOnly cookie
       );

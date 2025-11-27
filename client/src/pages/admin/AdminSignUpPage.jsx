@@ -40,7 +40,7 @@ const AdminSignUpPage = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "https://food-ordering-app-main-project-1.onrender.com/api/admin/admin-signup", 
+        "/admin/admin-signup", 
         {
           name: fullName,
           email,
