@@ -89,9 +89,9 @@ const CategoryManagement = () => {
   type="submit"
   disabled={loading}
   className="
-    flex-1 bg-blue-600 text-white py-2 rounded 
+    flex-1 bg-blue-600 text-white px-5 py-2 rounded 
     hover:bg-blue-700 transition 
-    mx-auto block w-40
+    mx-auto w-fit block
   "
 >
   {loading ? "Saving..." : editingId ? "Update Category" : "Add Category"}
