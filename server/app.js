@@ -30,8 +30,11 @@ app.use(cors({
       callback(new Error("Not allowed by CORS"));
     }
   },
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
+
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");

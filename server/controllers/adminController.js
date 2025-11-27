@@ -302,13 +302,14 @@ const logout = async(req,res) =>
      {
        // Clear the token cookie
 
-       res.clearCookie('token',
-        {
-            httpOnly : true ,
-            secure: process.env.NODE_ENV === "production",
-            sameSite : 'none'
-        }
-       )
+       res.clearCookie('token', {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: 'none'
+});
+res.status(200).json({ message: "Admin Logged Out Successfully" });
+
+       
        res.status(200).json({message:"Admin Logged Out Successfully"})
         
     } 
