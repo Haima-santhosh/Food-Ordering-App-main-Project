@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
-import api from "../api/axios";
+import api from "../../api/axios";
 
 const SignInPage = () => {
   const { signin } = useContext(UserContext);
