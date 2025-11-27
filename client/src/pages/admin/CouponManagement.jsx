@@ -135,7 +135,9 @@ const CouponManagement = () => {
         <div className="mt-3 flex flex-col sm:flex-row gap-2">
           <button
             onClick={editing ? updateCoupon : addCoupon}
-            className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex-1 mx-auto w-fit block"
+            className=" flex-1 bg-blue-600 text-white px-5 py-2 rounded 
+    hover:bg-blue-700 transition 
+    mx-auto w-fit block"
           >
             {editing ? "Save" : "Add"}
           </button>
