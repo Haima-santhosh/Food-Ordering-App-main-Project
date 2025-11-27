@@ -8,46 +8,26 @@ const createCheckoutSession = async (req, res) => {
   try {
     const { cart, address, coupon, total, restId } = req.body;
 
-    // Basic validations
-    if (!cart || cart.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
+    if (!cart || cart.length === 0) return res.status(400).json({ message: "Cart is empty" });
+    if (!address || !address.trim()) return res.status(400).json({ message: "Delivery address is required" });
+    if (!restId) return res.status(400).json({ message: "Restaurant ID missing" });
+    if (!total || total <= 0) return res.status(400).json({ message: "Invalid total amount" });
 
-    if (!address || !address.trim()) {
-      return res.status(400).json({ message: "Delivery address is required" });
-    }
-
-    if (!restId) {
-      return res.status(400).json({ message: "Restaurant ID missing" });
-    }
-
-    if (!total || total <= 0) {
-      return res.status(400).json({ message: "Invalid total amount" });
-    }
-
-    // Create the Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-
       line_items: [
         {
           price_data: {
             currency: "inr",
             product_data: { name: "Order Total" },
-            unit_amount: Math.round(total * 100), // convert to paise
+            unit_amount: Math.round(total * 100),
           },
           quantity: 1,
         },
       ],
-
-      // Redirect URLs
-      success_url:
-        "http://localhost:5173/payment-success?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: "http://localhost:5173/payment-cancel",
-
-
-      // Extra info saved for later
+      success_url: `${process.env.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
       metadata: {
         address,
         restId,
@@ -68,21 +48,15 @@ const createCheckoutSession = async (req, res) => {
 const verifyCheckoutSession = async (req, res) => {
   try {
     const { sessionId } = req.body;
-
-    if (!sessionId) {
-      return res.status(400).json({ message: "Session ID missing" });
-    }
+    if (!sessionId) return res.status(400).json({ message: "Session ID missing" });
 
     // Fetch Stripe session
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (session.payment_status !== "paid") {
-      return res.json({ message: "Payment not completed" });
-    }
+    if (session.payment_status !== "paid") return res.json({ message: "Payment not completed" });
 
-    // Avoid saving the same order twice
+    // Avoid saving duplicate orders
     const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
-
     if (existingOrder) {
       return res.json({
         message: "Payment successful",
@@ -98,32 +72,21 @@ const verifyCheckoutSession = async (req, res) => {
 
     const cartItems = JSON.parse(session.metadata.cart || "[]");
 
-    // Create new order
     const newOrder = new Order({
-      userId: req.user.id,
+      userId: req.user.id, // requires authUser middleware
       restId: session.metadata.restId,
-
-      items: cartItems.map((item) => ({
+      items: cartItems.map(item => ({
         itemId: item.itemId,
         quantity: item.quantity,
         price: item.price,
       })),
-
-      couponId:
-        session.metadata.couponId === "none" ? null : session.metadata.couponId,
-
-      couponName:
-        session.metadata.couponName === "none"
-          ? null
-          : session.metadata.couponName,
-
+      couponId: session.metadata.couponId === "none" ? null : session.metadata.couponId,
+      couponName: session.metadata.couponName === "none" ? null : session.metadata.couponName,
       amount: session.amount_total / 100,
       deliveryAddress: session.metadata.address,
       paymentStatus: "Completed",
       paymentMethod: "card",
       stripeSessionId: sessionId,
-
-      // Order starts in pending status
       status: "pending",
     });
 
@@ -140,7 +103,7 @@ const verifyCheckoutSession = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log("verify error:", err.message);
+    console.error("verifyCheckoutSession error:", err.message);
     res.status(500).json({ message: "Failed to verify payment" });
   }
 };
