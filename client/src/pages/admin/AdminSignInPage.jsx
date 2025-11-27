@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../../api/axios";
+import api from "../api/axios";
 import { UserContext } from "../../context/UserContext";
 
 const AdminSignInPage = () => {
@@ -26,7 +26,11 @@ const AdminSignInPage = () => {
       setLoading(true);
 
       // Send login request to backend
-      const { data } = await api.post("/admin/admin-signin", { email, password });
+      const { data } = await api.post(
+        "/admin/admin-signin",
+        { email, password },
+        { withCredentials: true } // important if backend sets httpOnly cookie
+      );
 
       // Save admin data to context
       signin({ ...data.admin, role: "admin" });

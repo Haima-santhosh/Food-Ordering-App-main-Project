@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios";
+import axios from "axios";
 
 const AdminSignUpPage = () => {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ const AdminSignUpPage = () => {
     try {
       setLoading(true);
 
-      const response = await api.post(
+      const response = await axios.post(
         "/admin/admin-signup", 
         {
           name: fullName,
