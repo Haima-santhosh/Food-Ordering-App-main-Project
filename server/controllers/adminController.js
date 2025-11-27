@@ -77,12 +77,13 @@ const signin = async (req, res) => {
     const token = generateToken(admin._id, "admin");
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // true on Render HTTPS
+  sameSite: "none", // needed for cross-origin (client + server on different domains)
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+});
+
 
     return res.status(200).json({
       message: "Admin sign-in successful!",

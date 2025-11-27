@@ -15,7 +15,8 @@ app.use(cookieParser());
 
 // CORS setup for Render + local
 const allowedOrigins = [
-  "https://food-ordering-app-main-project-client.onrender.com"
+  "https://food-ordering-app-main-project-client.onrender.com",
+  "https://food-ordering-app-main-project-server.onrender.com" // optional for testing
 ];
 
 app.use(
@@ -26,9 +27,9 @@ app.use(
       }
       return callback(new Error("Not allowed by CORS"));
     },
+    credentials: true, // important for sending cookies
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
