@@ -8,7 +8,8 @@ const upload = require('../middlewares/multer')
 
 // CREATE New Restaurant BY ADMIN
 // POST http://localhost:3000/api/restaurants/add-restaurants
-restaurantRouter.post('/add-restaurants',authAdmin,upload.single('image'),addRestaurants)
+restaurantRouter.post('/add-restaurants',upload.single('image'),authAdmin,addRestaurants);
+
 
 
 //VIEW all Restaurants by ADMIN

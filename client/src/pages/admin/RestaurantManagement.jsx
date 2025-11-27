@@ -36,38 +36,44 @@ const RestaurantManagement = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const data = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null) data.append(key, formData[key]);
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const data = new FormData();
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== null) data.append(key, formData[key]);
+    });
+
+    if (editingId) {
+      await api.patch(`/restaurants/update-restaurant/${editingId}`, data, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
-
-      if (editingId) {
-        await api.patch(`/restaurants/update-restaurant/${editingId}`, data);
-      } else {
-        await api.post("/restaurants/add-restaurants", data);
-      }
-
-      await loadRestaurants();
-
-      setFormData({
-        restName: "",
-        rating: "",
-        deliveryTime: "",
-        cuisineType: "",
-        averagePrice: "",
-        address: "",
-        image: null,
+    } else {
+      await api.post("/restaurants/add-restaurants", data, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
-      setEditingId(null);
-    } catch (err) {
-      console.error("Save failed", err);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    await loadRestaurants();
+
+    setFormData({
+      restName: "",
+      rating: "",
+      deliveryTime: "",
+      cuisineType: "",
+      averagePrice: "",
+      address: "",
+      image: null,
+    });
+
+    setEditingId(null);
+  } catch (err) {
+    console.error("Save failed", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (restaurant) => {
     setEditingId(restaurant._id);
