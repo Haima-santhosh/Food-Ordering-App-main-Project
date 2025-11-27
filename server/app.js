@@ -16,17 +16,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// -----------------------------
 // CORS setup
-// -----------------------------
 const allowedOrigins = [
-  "http://localhost:5173", // local Vite client
-  "https://food-ordering-app-main-project-client.onrender.com", // deployed client
+  "http://localhost:5174",
+  "https://food-ordering-app-main-project-client.onrender.com",
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -35,6 +32,11 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 // -----------------------------
 // DATABASE CONNECTION
