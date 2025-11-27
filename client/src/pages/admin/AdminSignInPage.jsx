@@ -50,7 +50,7 @@ const AdminSignInPage = () => {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded shadow-md w-full max-w-sm"
       >
-        <h2 className="text-2xl font-bold text-center mb-4">Admin Sign In</h2>
+        <h2 className="text-2xl font-bold text-center mb-4">Grabbite Admin Sign In</h2>
 
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
