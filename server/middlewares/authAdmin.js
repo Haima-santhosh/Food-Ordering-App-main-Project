@@ -4,11 +4,9 @@ const jwt = require('jsonwebtoken');
 const authAdmin = (req, res, next) => {
   try {
     const token = req.cookies?.token;
-    console.log("Token received:", token);
+    console.log("Token received in authAdmin:", token); // <--- should log value
 
-    if (!token) {
-      return res.status(401).json({ error: "Admin is not authorized" });
-    }
+    if (!token) return res.status(401).json({ error: "Admin is not authorized" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     if (!decoded || decoded.role !== "admin") {
@@ -22,5 +20,6 @@ const authAdmin = (req, res, next) => {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
+
 
 module.exports = authAdmin;

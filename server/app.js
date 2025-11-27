@@ -15,23 +15,18 @@ app.use(cookieParser());
 
 // CORS setup for Render + local
 const allowedOrigins = [
-  "https://food-ordering-app-main-project-client.onrender.com",
-  "https://food-ordering-app-main-project-server.onrender.com" // optional for testing
+  "https://food-ordering-app-main-project-client.onrender.com"
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true, // important for sending cookies
-    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  })
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 
 // DATABASE CONNECTION
