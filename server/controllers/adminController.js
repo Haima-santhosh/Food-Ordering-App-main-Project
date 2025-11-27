@@ -168,12 +168,14 @@ const token = generateToken(adminExists._id, 'admin');
 
 // Set the token as cookie 
 
-    res.cookie('token', token, {
+   
+res.cookie('token', token, {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 60 * 60 * 1000,
+  secure: process.env.NODE_ENV === "production", 
+  sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // cross-origin for Render
+  maxAge: 60 * 60 * 1000, // 1 hour
 });
+
 
 
 

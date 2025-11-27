@@ -1,53 +1,27 @@
-const jwt = require('jsonwebtoken')
+// middlewares/authAdmin.js
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 
-// Middleware to check if a Admin is logged in
-const authAdmin = (req,res,next)=>
-{
-    try 
-    {
-     //validate the cookies before
-     // Check if cookies exist
-    if (!req.cookies) {
-      return res.status(401).json({ error: "No cookies found, not authorized" });
+const authAdmin = async (req, res, next) => {
+  try {
+    // Get token from cookies
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: 'Not authorized, token missing' });
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const admin = await User.findById(decoded.id);
+
+    if (!admin || admin.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied, not an admin' });
     }
 
-     // Get token from cookies
+    req.admin = admin; // attach admin to request
+    next();
+  } catch (err) {
+    console.error('authAdmin error:', err);
+    res.status(401).json({ message: 'Not authorized, invalid token' });
+  }
+};
 
-     const {token} = req.cookies
-      
-       // If no token, deny access
-     if(!token)
-     {
-        return res.status(401).json({error:"Admin is not authorized"})
-     }
-        
-     // if Admin has token verifying it to find any kind of tampering or issue
-
-     const decodedToken = jwt.verify(token,process.env.JWT_SECRET_KEY)
-      
-     // If token invalid, block access
-     if(!decodedToken)
-     {
-        return res.status(401).json({error:"Admin is not authorized"}) 
-     }
-   
-     
-    // Check if token contains role as admin
-
-if (decodedToken.role !== 'admin') {
-  return res.status(403).json({ error: "Access denied. Not an Admin" });
-}
-
-     // Attach Admin info to request object
-     req.admin = decodedToken
-
-
-   next()
-    } 
-    
-    catch (error) {
-      console.log(error);
-      return res.status(401).json({ error: "Invalid or expired token" })  
-    }
-}
 module.exports = authAdmin;
