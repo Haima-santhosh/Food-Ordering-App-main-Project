@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { CheckCircleIcon } from "@heroicons/react/24/solid"; // optional icon for success
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 const PaymentSuccessPage = () => {
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
+
   const location = useLocation();
   const navigate = useNavigate();
 
-  const query = new URLSearchParams(location.search);
-  const sessionId = query.get("session_id");
+  const params = new URLSearchParams(location.search);
+  const sessionId = params.get("session_id");
 
   useEffect(() => {
     const verifyPayment = async () => {
       if (!sessionId) return navigate("/cart");
 
       try {
-        const res = await api.post("/payment/verify-checkout-session", { sessionId });
+        const res = await api.post("/payment/verify-checkout-session", {
+          sessionId,
+        });
         setOrder(res.data.order);
       } catch (err) {
         console.error("Payment verification failed", err);
@@ -30,32 +33,37 @@ const PaymentSuccessPage = () => {
     verifyPayment();
   }, [sessionId, navigate]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-slate-900">
-        <p className="text-lg text-gray-700 dark:text-gray-300">Verifying your payment...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-900">
+        <p className="text-gray-700 dark:text-gray-300 text-lg">
+          Verifying your payment...
+        </p>
       </div>
     );
+  }
 
-  if (!order)
+  if (!order) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-slate-900">
-        <p className="text-lg text-red-600">No order found. Please try again.</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-900">
+        <p className="text-red-600 text-lg">No order found. Please try again.</p>
       </div>
     );
+  }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-slate-900 px-4">
-      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-xl p-8 max-w-md w-full text-center">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-slate-900 px-4">
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg max-w-md w-full text-center">
         <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">
+
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
           Payment Successful!
         </h1>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
           Your order has been placed successfully.
         </p>
 
-        <div className="text-left space-y-2 bg-gray-50 dark:bg-slate-700 p-4 rounded-lg mb-6">
+        <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg text-left space-y-2 mb-6">
           <p>
             <span className="font-semibold">Order ID:</span> {order.orderId}
           </p>
@@ -66,7 +74,8 @@ const PaymentSuccessPage = () => {
             <span className="font-semibold">Delivery Address:</span> {order.address}
           </p>
           <p>
-            <span className="font-semibold">Coupon Applied:</span> {order.couponName || "None"}
+            <span className="font-semibold">Coupon Applied:</span>{" "}
+            {order.couponName || "None"}
           </p>
         </div>
 
