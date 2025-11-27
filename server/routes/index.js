@@ -12,48 +12,34 @@ const paymentRouter = require('./paymentRoutes')
 const orderRouter = require('./orderRoutes')
 const reviewRouter = require('./reviewRoutes')
 
-
 // http://localhost:3000/api/user
-router.use('/user',userRouter)
+router.use('/user', userRouter)
 
 // http://localhost:3000/api/admin
-router.use('/admin',adminRouter)
+router.use('/admin', adminRouter)
 
-
-//http://localhost:3000/api/restaurant
+//http://localhost:3000/api/restaurants
 router.use('/restaurants', restaurantRouter)
 
 // http://localhost:3000/api/category
-router.use('/category',categoryRouter)
+router.use('/category', categoryRouter)
 
 // http://localhost:3000/api/menu
-router.use('/menu',menuRouter)
+router.use('/menu', menuRouter)
 
 // http://localhost:3000/api/cart
-router.use('/cart',cartRouter)
-
+router.use('/cart', cartRouter)
 
 // http://localhost:3000/api/coupons
-router.use('/coupons',couponRouter)
-
+router.use('/coupons', couponRouter)
 
 // http://localhost:3000/api/order
-router.use('/order',orderRouter)
-
+router.use('/order', orderRouter)
 
 // http://localhost:3000/api/payment
-router.use('/payment', require('./paymentRoutes'));
-
-
+router.use('/payment', paymentRouter)
 
 // http://localhost:3000/api/review
 router.use('/review', reviewRouter)
-
-
-
-
-
-
-
 
 module.exports = router
