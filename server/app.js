@@ -1,4 +1,4 @@
-// app.js
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -16,27 +16,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// -----------------------------
 // CORS setup
+// -----------------------------
 const allowedOrigins = [
-  "http://localhost:5174", // local dev
-  "https://food-ordering-app-main-project-client.onrender.com", // render client
-  
+  "http://localhost:5173", // local Vite client
+  "https://food-ordering-app-main-project-client.onrender.com", // deployed client
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
-}));
-
-// Handle preflight requests for all routes
-app.options("*", cors({
-  origin: allowedOrigins,
   credentials: true,
 }));
 
