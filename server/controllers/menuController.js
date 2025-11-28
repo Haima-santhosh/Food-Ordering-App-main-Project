@@ -16,14 +16,18 @@ const addMenu = async (req, res) => {
   try {
     const { restId, categoryId, itemName, itemDescription, price, rating } = req.body;
 
-if (!restId || !categoryId || !itemName || !itemDescription || !price || !rating || !req.file) {
-  return res.status(400).json({ message: "Please fill all required fields!" });
-}
+    // Correct validation
+    if (!restId || !categoryId || !itemName || !price) {
+      return res.status(400).json({ message: "Please fill all required fields!" });
+    }
 
-    // Upload image to Cloudinary
-    const file = req.file;
-    const cloudinaryResponse = await cloudinaryInstance.uploader.upload(file.path);
-    const imageUrl = cloudinaryResponse.secure_url;
+    let imageUrl;
+
+    // If image is uploaded, upload to cloudinary
+    if (req.file) {
+      const cloudinaryResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+      imageUrl = cloudinaryResponse.secure_url;
+    }
 
     // Check if menu item already exists
     const menuExists = await Menu.findOne({ itemName, restId, categoryId });
@@ -31,16 +35,16 @@ if (!restId || !categoryId || !itemName || !itemDescription || !price || !rating
       return res.status(400).json({ message: "Menu item already exists!" });
     }
 
-    // Create new menu item
-   const newMenu = new Menu({
-  restId,
-  categoryId,
-  itemName,
-  itemDescription,
-  price,
-  rating,
-  itemImage: imageUrl,
-});
+    // Use imageUrl only if uploaded
+    const newMenu = new Menu({
+      restId,
+      categoryId,
+      itemName,
+      itemDescription,
+      price,
+      rating: rating || 0,
+      ...(imageUrl && { itemImage: imageUrl }),
+    });
 
     const savedMenu = await newMenu.save();
 
@@ -50,11 +54,9 @@ if (!restId || !categoryId || !itemName || !itemDescription || !price || !rating
     });
   } catch (error) {
     console.error(error);
-    res.status(error.status || 500).json({ error: error.message || "Internal Server Error" });
+    res.status(500).json({ error: error.message || "Internal Server Error" });
   }
 };
-
-
 
 
 
