@@ -17,7 +17,7 @@ for (let i = 1; i <= totalPages; i++) {
 }
 
   return (
-    <div className="flex justify-center items-center gap-2 pb-10">
+    <div className="flex justify-center items-center gap-2 pt-10">
 
      
       <button

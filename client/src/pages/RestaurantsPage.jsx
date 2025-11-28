@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios"; 
+import api from "../api/axios";
 import Pagination from "../components/Pagination";
 
 const Restaurants = () => {
@@ -9,6 +9,11 @@ const Restaurants = () => {
   const [selectedCuisine, setSelectedCuisine] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8; // 8 restaurants in 1 page
+
   const navigate = useNavigate();
 
   const cuisines = [
@@ -26,7 +31,7 @@ const Restaurants = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await api.get("/restaurants/view-restaurants"); 
+        const response = await api.get("/restaurants/view-restaurants");
         setRestaurants(response.data.restaurants || []);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch restaurants.");
@@ -38,6 +43,7 @@ const Restaurants = () => {
     fetchRestaurants();
   }, []);
 
+ 
   const filteredRestaurants = restaurants.filter((rest) => {
     const matchesSearch =
       rest.restName.toLowerCase().includes(search.toLowerCase()) ||
@@ -50,6 +56,14 @@ const Restaurants = () => {
     return matchesSearch && matchesCuisine;
   });
 
+  // pagination slicing
+  const totalPages = Math.ceil(filteredRestaurants.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentRestaurants = filteredRestaurants.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
   if (loading) return <p className="text-center mt-20">Loading restaurants...</p>;
   if (error) return <p className="text-center mt-20 text-red-500">{error}</p>;
 
@@ -61,19 +75,25 @@ const Restaurants = () => {
             Explore Your Favourite Restaurants
           </h1>
 
-         
+        
           <div className="flex flex-col md:flex-row justify-between gap-4 mb-10">
             <input
               type="text"
               placeholder="Search by restaurant or cuisine..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full md:w-1/2 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"
             />
 
             <select
               value={selectedCuisine}
-              onChange={(e) => setSelectedCuisine(e.target.value)}
+              onChange={(e) => {
+                setSelectedCuisine(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full md:w-1/4 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"
             >
               {cuisines.map((c) => (
@@ -84,12 +104,12 @@ const Restaurants = () => {
             </select>
           </div>
 
-          
-          {filteredRestaurants.length === 0 ? (
+       
+          {currentRestaurants.length === 0 ? (
             <p className="text-center text-gray-500 italic">No restaurants found.</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-              {filteredRestaurants.map((rest) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+              {currentRestaurants.map((rest) => (
                 <div
                   key={rest._id}
                   className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl transition-all"
@@ -97,7 +117,7 @@ const Restaurants = () => {
                   <img
                     src={rest.image || "/placeholder.jpg"}
                     alt={rest.restName}
-                    className="w-full h-52 object-cover"
+                    className="w-full h-52 object-cover rounded-t-2xl"
                   />
 
                   <div className="p-6 text-center">
@@ -124,10 +144,17 @@ const Restaurants = () => {
               ))}
             </div>
           )}
+
+          {/* PAGINATION */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              if (page > 0 && page <= totalPages) setCurrentPage(page);
+            }}
+          />
         </div>
       </div>
-
-      <Pagination />
     </>
   );
 };
