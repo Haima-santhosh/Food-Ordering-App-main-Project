@@ -1,27 +1,35 @@
 import React, { useState, useContext } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import { UserContext } from "../context/UserContext";
 import { useSelector } from "react-redux";
+import api from "../api/axios"; // axios instance with { withCredentials: true }
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signout } = useContext(UserContext);
 
   const cartItems = useSelector((state) => state.cart); 
-const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0); 
-
+  const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0); 
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
-  const handleSignout = () => {
-    signout();
-    setDropdownOpen(false);
-    setMenuOpen(false);
+  
+  const handleSignout = async () => {
+    try {
+      await api.post("/user/logout", {}, { withCredentials: true }); // clear cookie in backend
+      signout(); // remove user from context
+      setDropdownOpen(false);
+      setMenuOpen(false);
+      navigate("/signin", { replace: true }); // redirect to sign in page
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
   const navLinks = [
@@ -34,12 +42,11 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
   return (
     <header className="bg-white shadow-md fixed w-full top-0 left-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4">
-       
         <Link to="/" className="flex items-center">
           <img src="/logo1.png" alt="Logo" className="h-10 w-auto" />
         </Link>
 
-        {/* Desktop nav links */}
+        {/* Desktop nav */}
         <nav className="hidden md:flex space-x-3">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
@@ -59,17 +66,16 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
           })}
         </nav>
 
-        {/* Desktop user section */}
+       
         <div className="hidden md:flex items-center space-x-6 relative">
           <Link to="/cart" className="relative text-gray-700 hover:text-blue-600 text-xl">
-  <FaShoppingCart />
-  {totalItems > 0 && (
-    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-      {totalItems}
-    </span>
-  )}
-</Link>
-
+            <FaShoppingCart />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </Link>
 
           {user ? (
             <div className="relative">
@@ -125,16 +131,13 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
           )}
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          onClick={toggleMenu}
-          className="md:hidden text-gray-700 text-2xl"
-        >
+        
+        <button onClick={toggleMenu} className="md:hidden text-gray-700 text-2xl">
           {menuOpen ? <FaTimes /> : <FaBars />}
         </button>
       </div>
 
-      {/* Mobile dropdown menu */}
+     
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 px-4 py-3 space-y-2">
           {navLinks.map((link) => {
@@ -155,18 +158,14 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
             );
           })}
 
-
-       <Link to="/cart" className="relative text-gray-700 text-xl">
-  <FaShoppingCart />
-  {totalItems > 0 && (
-    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-      {totalItems}
-    </span>
-  )}
-</Link>
-
-
-
+          <Link to="/cart" className="relative text-gray-700 text-xl">
+            <FaShoppingCart />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </Link>
 
           {user ? (
             <>

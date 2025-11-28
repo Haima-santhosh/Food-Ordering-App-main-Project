@@ -247,6 +247,10 @@ const logout = async(req,res) =>
   path: "/",          // for render
 });
 
+
+res.status(200).json({ message: "Logged out successfully" });
+
+
        res.status(200).json({message:"User Logged Out Successfully"})
         
     } 
