@@ -1,27 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { UserContext } from "./UserContext";
-import api from "../api/axios"; 
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // Load user from backend 
+  // Load user from localStorage safely
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await api.get("/user/profile", { withCredentials: true });
-        if (response.data?.user) {
-          setUser(response.data.user);
-          localStorage.setItem("userData", JSON.stringify(response.data.user));
-        }
-      } catch (err) {
-        console.log("User not authenticated", err);
-        setUser(null);
-        localStorage.removeItem("userData");
-      }
-    };
-
-    fetchUser();
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("userData"));
+      if (storedUser) setUser(storedUser);
+    } catch (err) {
+      console.warn("Invalid userData in localStorage. Clearing it.");
+      localStorage.removeItem("userData");
+      console.log(err);
+      
+    }
   }, []);
 
   // Login function
@@ -30,13 +23,8 @@ export const UserProvider = ({ children }) => {
     localStorage.setItem("userData", JSON.stringify(userData));
   };
 
-  // Logout function 
-  const signout = async () => {
-    try {
-      await api.post("/user/logout", {}, { withCredentials: true });
-    } catch (err) {
-      console.warn("Logout failed:", err);
-    }
+  // Logout function
+  const signout = () => {
     setUser(null);
     localStorage.removeItem("userData");
   };
