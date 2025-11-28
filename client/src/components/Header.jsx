@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import { UserContext } from "../context/UserContext";
 import { useSelector } from "react-redux";
-import api from "../api/axios"; // axios instance with { withCredentials: true }
+import api from "../api/axios"; 
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
