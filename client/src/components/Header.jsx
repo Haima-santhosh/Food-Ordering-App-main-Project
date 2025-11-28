@@ -1,12 +1,15 @@
 import React, { useState, useContext } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
 import { UserContext } from "../context/UserContext";
 import { useSelector } from "react-redux";
 
+
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
 
   const location = useLocation();
   const { user, signout } = useContext(UserContext);
@@ -18,11 +21,13 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
-  const handleSignout = () => {
-    signout();
-    setDropdownOpen(false);
-    setMenuOpen(false);
-  };
+ const handleSignout = () => {
+  signout();          // clear localStorage
+  setDropdownOpen(false);
+  setMenuOpen(false);
+  navigate("/signin"); // redirect to sign-in page
+};
+
 
   const navLinks = [
     { name: "Home", path: "/" },

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api/axios"; // <- use your axios instance
+import api from "../api/axios"; // your axios instance
 import CartButton from "../components/CartButton";
 
 const SingleMenuDetailsPage = () => {
@@ -9,50 +9,36 @@ const SingleMenuDetailsPage = () => {
 
   const [menuItem, setMenuItem] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [rating, setRating] = useState("");
   const [comment, setComment] = useState("");
 
-  // LOAD MENU LIST  Filter One Item
-  useEffect(() => {
-    const loadMenuItem = async () => {
-      try {
-        const res = await api.get("/menu/get-menu"); 
-        const item = res.data.menu.find(
-          (m) => String(m.itemId) === String(itemId) && String(m.restId) === String(restId)
-        );
-
-        setMenuItem(item || null);
-      } catch (err) {
-        console.log("Error fetching menu item:", err);
-      }
-    };
-
-    loadMenuItem();
-  }, [restId, itemId]);
-
-  // LOAD FULL DETAILS OF SINGLE ITEM
   useEffect(() => {
     const loadDetails = async () => {
+      setLoading(true);
       try {
         const res = await api.get(`/menu/get-menu-details/${itemId}`);
-        setMenuItem(res.data.menu || null);
-        setRestaurant(res.data.restaurant || null);
+        if (res.data.menu) {
+          setMenuItem(res.data.menu);
+          setRestaurant(res.data.restaurant || null);
+        } else {
+          setMenuItem(null);
+        }
       } catch (err) {
-        console.log("Error fetching menu item details:", err);
+        console.log("Error fetching menu item:", err);
+        setMenuItem(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadDetails();
   }, [itemId]);
 
-  // SUBMIT REVIEW
   const submitReview = async (e) => {
     e.preventDefault();
-
-    if (!rating || !comment) {
-      return alert("Please fill all fields");
-    }
+    if (!rating || !comment) return alert("Please fill all fields");
 
     try {
       await api.post("/review/add-review", {
@@ -61,7 +47,6 @@ const SingleMenuDetailsPage = () => {
         rating: Number(rating),
         comment,
       });
-
       setRating("");
       setComment("");
       alert("Review added");
@@ -70,6 +55,14 @@ const SingleMenuDetailsPage = () => {
       alert("Failed to add review");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center text-lg">
+        Loading...
+      </div>
+    );
+  }
 
   if (!menuItem) {
     return (
@@ -112,7 +105,6 @@ const SingleMenuDetailsPage = () => {
             )}
 
             <p className="text-xl text-green-600 font-bold">₹{menuItem.price}</p>
-
             <p className="text-yellow-500 font-medium">⭐ {menuItem.rating} / 5</p>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center md:justify-start">
@@ -127,7 +119,6 @@ const SingleMenuDetailsPage = () => {
           </div>
         </div>
 
-        {/* Review Form */}
         <div className="mt-12 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-slate-600 max-w-lg mx-auto">
           <h3 className="text-xl font-bold text-center mb-4">Add A Review</h3>
 
