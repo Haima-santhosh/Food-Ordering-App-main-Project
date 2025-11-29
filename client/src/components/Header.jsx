@@ -25,7 +25,7 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
   signout();          // clear localStorage
   setDropdownOpen(false);
   setMenuOpen(false);
-  navigate("/signin"); // redirect to sign-in page
+  navigate("/signin"); // redirect to signin page
 };
 
 
@@ -230,4 +230,4 @@ const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0
   );
 };
 
-export default Header;
+export default Header

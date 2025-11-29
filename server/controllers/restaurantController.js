@@ -205,12 +205,6 @@ const getRestaurantDataByUser = async (req, res) => {
   }
 };
 
-module.exports = {
-  addRestaurants,
-  allRestaurants,
-  getRestaurant,
-  updateRestaurantByAdmin,
-  deleteRestaurantByAdmin,
-  getRestaurantByUser,
+module.exports = {addRestaurants,allRestaurants,getRestaurant,updateRestaurantByAdmin,deleteRestaurantByAdmin,getRestaurantByUser,
   getRestaurantDataByUser,
-};
+}

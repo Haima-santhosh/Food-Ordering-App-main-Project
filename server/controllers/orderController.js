@@ -39,7 +39,7 @@ const Coupon = require('../models/couponModel')
              let totalAmount = cart.items.reduce((sum, element) => sum + element.itemId.price * element.quantity, 0);
 
 
-          // Apply Coupon if Any
+          // Apply Coupon if Any available here
 
           if(couponId)
           {
@@ -90,9 +90,10 @@ const Coupon = require('../models/couponModel')
     }
 
   
-    //GET ALL ORDERS FROM USER SIDE
+  
 
   // GET ALL ORDERS FROM USER SIDE
+
 const getOrders = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -169,7 +170,7 @@ const getOrders = async (req, res) => {
 
       // CANCEL ORDER BY USER
    
-  // Cancel an order by user
+ 
 // Check order exists, cannot cancel delivered or already cancelled orders
 const cancelOrder = async (req, res) => {
   try {

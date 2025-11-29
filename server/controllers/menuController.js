@@ -74,7 +74,7 @@ const allMenu = async(req, res) => {
 
     return res.status(200).json({
       message: "Menu List Fetched Successfully!!",
-      menus, // frontend expects 'menus'
+      menus, // frontend expects menus
     });
   } catch (error) {
     console.log(error);
