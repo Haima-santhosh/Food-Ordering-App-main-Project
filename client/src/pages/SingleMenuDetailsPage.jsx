@@ -74,7 +74,7 @@ const SingleMenuDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-28 px-4 sm:px-6 md:px-10 text-gray-900 dark:text-white">
-      <div className="max-w-5xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sm:p-10">
+      <div className="max-w-5xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sm:p-10 mb-10">
         <h2 className="text-3xl font-bold text-center text-blue-700 dark:text-blue-300 mb-10 border-b border-gray-300 dark:border-slate-600 pb-6">
           Explore Your Favourite Dishes 🍛
         </h2>

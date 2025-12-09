@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Define allowed frontend URLs
+// frontend URL
 const allowedOrigins = [
   "https://food-ordering-app-main-project-client.onrender.com",
   "http://localhost:5173" // for local development
@@ -22,7 +22,7 @@ const allowedOrigins = [
 // CORS setup
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like Postman)
+    // allow requests with no origin 
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -32,7 +32,7 @@ app.use(cors({
     }
   },
   credentials: true, // allow cookies
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+ methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
