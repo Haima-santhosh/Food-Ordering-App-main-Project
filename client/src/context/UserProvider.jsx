@@ -4,13 +4,13 @@ import { UserContext } from "./UserContext";
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // Load user from localStorage safely
+  // Load user from localStorage
   useEffect(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem("userData"));
       if (storedUser) setUser(storedUser);
     } catch (err) {
-      console.warn("Invalid userData in localStorage. Clearing it.");
+      console.warn("Invalid userData");
       localStorage.removeItem("userData");
       console.log(err);
       
