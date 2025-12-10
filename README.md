@@ -1,7 +1,7 @@
 # Grabbite Food Ordering App – Project Documentation
 
 ## Overview
-GrabBite is a full‑stack food ordering application built using the MERN stack. This project includes complete user functionality, admin panel operations, restaurant dashboard, product management, order tracking, coupons, reviews, payments, and more.
+Grabbite is a full‑stack food ordering application built using the MERN stack. This project includes complete user functionality, admin panel operations, restaurant dashboard, product management, order tracking, coupons, reviews, payments, and more.
 
 
 
