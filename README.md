@@ -8,7 +8,7 @@ Grabbite is a full‑stack food ordering application built using the MERN stack.
 ## Key Features
 
 ### ✅ User Side
-- User signup & sigin 
+- User signup & signin 
 - Browse restaurants & food items
 - Add to cart, update quantity, remove items
 - Apply coupons during checkout
@@ -86,15 +86,13 @@ cd project
 ### 2️⃣ Install Frontend
 
 cd client
-npm install
 npm run dev
 
 
 ### 3️⃣ Install Backend
 ```
 cd server
-npm install
-npm start
+npm run dev
 
 
 ### 4️⃣ Environment Variables (Backend)
