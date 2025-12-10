@@ -34,7 +34,7 @@ const SignUpPage = () => {
       });
 
       signin(response.data.user); // auto-login
-      navigate("/", { replace: true });
+      navigate("/signin", { replace: true });
     } catch (err) {
       console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Signup failed");
